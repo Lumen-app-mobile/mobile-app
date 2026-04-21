@@ -19,7 +19,7 @@ function LoginForm({ onClose, onEnter }: LoginFormProps) {
 	return (
 		<View
 			style={{
-				backgroundColor: colors.colors.base.white,
+				backgroundColor: colors.base.white,
 				padding: 24,
 				borderTopLeftRadius: 28,
 				borderTopRightRadius: 28,
@@ -31,7 +31,7 @@ function LoginForm({ onClose, onEnter }: LoginFormProps) {
 						width: 48,
 						height: 6,
 						borderRadius: 999,
-						backgroundColor: colors.colors.primary.v3,
+						backgroundColor: colors.primary.v3,
 						marginBottom: 16,
 					}}
 				/>
@@ -39,7 +39,7 @@ function LoginForm({ onClose, onEnter }: LoginFormProps) {
 					style={{
 						fontSize: 28,
 						fontWeight: "700",
-						color: colors.colors.base.black,
+						color: colors.base.black,
 					}}>
 					Login
 				</Text>
@@ -64,14 +64,14 @@ function LoginForm({ onClose, onEnter }: LoginFormProps) {
 			<Pressable
 				onPress={onEnter}
 				style={{
-					backgroundColor: colors.colors.secondary.v1,
+					backgroundColor: colors.secondary.v1,
 					paddingVertical: 14,
 					alignItems: "center",
 					borderRadius: 16,
 				}}>
 				<Text
 					style={{
-						color: colors.colors.base.white,
+						color: colors.base.white,
 						fontWeight: "700",
 						fontSize: 16,
 					}}>
@@ -128,7 +128,7 @@ export default function LoginScreen() {
 							onPress={openSheet}
 							style={{
 								alignSelf: "center",
-								backgroundColor: colors.colors.base.white,
+								backgroundColor: colors.base.white,
 								paddingHorizontal: 20,
 								paddingVertical: 12,
 								borderRadius: 999,
