@@ -1,21 +1,49 @@
 import { router } from "expo-router";
-import { useState } from "react";
-import { ImageBackground, Modal, Pressable, Text, View } from "react-native";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { useEffect, useRef, useState } from "react";
+import {
+	Animated,
+	Dimensions,
+	ImageBackground,
+	Pressable,
+	Text,
+	View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import FormInput from "@/components/ui/FormInput";
+import TextField from "@/components/ui/FormInput";
 import colors from "@/constants/colors";
+import Logo from "../assets/images/logo.svg";
+import { auth } from "../firebaseConfig";
+const backgroundImage = require("../assets/images/Gemini_Generated_Image_9vrbv69vrbv69vrb.webp");
 
-const backgroundImage = {
-	uri: `https://picsum.photos/seed/lumen-${Math.floor(Math.random() * 4) + 1}/1200/2200`,
-};
+const SCREEN_HEIGHT = Dimensions.get("window").height;
 
 type LoginFormProps = {
 	onClose: () => void;
-	onEnter: () => void;
+	onEnter: (email: string, password: string) => void;
 };
 
+// Hoja inferior con los campos del login y las acciones de entrar/cerrar.
 function LoginForm({ onClose, onEnter }: LoginFormProps) {
+	// Estado local del formulario antes de enviarlo a Firebase.
+	const [email, setEmail] = useState("");
+	const [password, setPassword] = useState("");
+	const [error, setError] = useState("");
+	const [loading, setLoading] = useState(false);
+
+	const handleEnter = async () => {
+		setError("");
+		setLoading(true);
+		try {
+			await onEnter(email, password);
+		} catch {
+			setError("Email o contraseña incorrectos.");
+		} finally {
+			setLoading(false);
+		}
+	};
+
 	return (
 		<View
 			style={{
@@ -53,21 +81,39 @@ function LoginForm({ onClose, onEnter }: LoginFormProps) {
 				</Text>
 			</View>
 
-			<FormInput label="Email" placeholder="tu@email.com" size="md" />
-			<FormInput
+			<TextField
+				label="Email"
+				placeholder="tu@email.com"
+				size="md"
+				value={email}
+				onChangeText={setEmail}
+				autoCapitalize="none"
+				keyboardType="email-address"
+			/>
+			<TextField
 				label="Password"
 				placeholder="********"
 				size="md"
 				secureTextEntry
+				value={password}
+				onChangeText={setPassword}
 			/>
 
+			{error ? (
+				<Text style={{ color: colors.feedback.danger.v1, textAlign: "center" }}>
+					{error}
+				</Text>
+			) : null}
+
 			<Pressable
-				onPress={onEnter}
+				onPress={handleEnter}
+				disabled={loading}
 				style={{
 					backgroundColor: colors.secondary.v1,
 					paddingVertical: 14,
 					alignItems: "center",
 					borderRadius: 16,
+					opacity: loading ? 0.6 : 1,
 				}}>
 				<Text
 					style={{
@@ -75,11 +121,13 @@ function LoginForm({ onClose, onEnter }: LoginFormProps) {
 						fontWeight: "700",
 						fontSize: 16,
 					}}>
-					Entrar
+					{loading ? "Entrando..." : "Entrar"}
 				</Text>
 			</Pressable>
 
-			<Pressable onPress={onClose} style={{ alignItems: "center" }}>
+			<Pressable
+				onPress={onClose}
+				style={{ alignItems: "center" }}>
 				<Text style={{ color: "#666" }}>Cerrar</Text>
 			</Pressable>
 		</View>
@@ -87,72 +135,120 @@ function LoginForm({ onClose, onEnter }: LoginFormProps) {
 }
 
 export default function LoginScreen() {
+	// Controla si el bottom sheet del login está abierto o cerrado.
 	const [isSheetVisible, setIsSheetVisible] = useState(true);
+
+	const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+
+	useEffect(() => {
+		if (isSheetVisible) {
+			Animated.spring(slideAnim, {
+				toValue: 0,
+				useNativeDriver: true,
+				bounciness: 4,
+				speed: 14,
+			}).start();
+		} else {
+			Animated.timing(slideAnim, {
+				toValue: SCREEN_HEIGHT,
+				duration: 280,
+				useNativeDriver: true,
+			}).start();
+		}
+	}, [isSheetVisible, slideAnim]);
 
 	const openSheet = () => setIsSheetVisible(true);
 	const closeSheet = () => setIsSheetVisible(false);
-	const enterApp = () => router.replace("./(tabs)");
 
-	const form = <LoginForm onClose={closeSheet} onEnter={enterApp} />;
+	// Intenta autenticar al usuario y, si funciona, entra en la zona principal de la app.
+	const enterApp = async (email: string, password: string) => {
+		try {
+			const userCredential = await signInWithEmailAndPassword(
+				auth,
+				email,
+				password,
+			);
+			console.log(userCredential.user);
+			router.replace("/(tabs)");
+		} catch (error: any) {
+			console.log(`${error.code}: ${error.message}`);
+			throw `${error.code}: ${error.message}`;
+		}
+	};
 
 	return (
-		<ImageBackground source={backgroundImage} resizeMode="cover" style={{ flex: 1 }}>
-			<View
+		<View style={{ flex: 1, overflow: "hidden" }}>
+			{/* Imagen cubre toda la pantalla como fondo absoluto */}
+			<ImageBackground
+				source={backgroundImage}
+				resizeMode="cover"
 				style={{
-					flex: 1,
-					backgroundColor: "rgba(0, 0, 0, 0.28)",
-					justifyContent: "space-between",
+					position: "absolute",
+					top: 0,
+					bottom: 0,
+					left: 0,
+					right: 0,
 				}}>
-				<SafeAreaView style={{ padding: 24 }}>
-					<Text
-						style={{
-							color: "white",
-							fontSize: 36,
-							fontWeight: "700",
-						}}>
-						Lumen
-					</Text>
-					<Text
-						style={{
-							color: "white",
-							marginTop: 8,
-							maxWidth: 260,
-						}}>
-						Tus finanzas, en una vista clara y simple.
-					</Text>
+				<View
+					style={{ flex: 1, backgroundColor: "rgba(255, 255, 255, 0.6)" }}
+				/>
+			</ImageBackground>
+
+			{/* Título posicionado absolutamente arriba */}
+			<SafeAreaView
+				style={{
+					position: "absolute",
+					top: 0,
+					left: 0,
+					right: 0,
+					padding: 24,
+				}}>
+				<Logo
+					width={140}
+					height={40}
+				/>
+			</SafeAreaView>
+
+			{/* Bottom sheet animado deslizando desde abajo */}
+			<Animated.View
+				style={{
+					transform: [{ translateY: slideAnim }],
+					position: "absolute",
+					bottom: 0,
+					left: 0,
+					right: 0,
+				}}>
+				<SafeAreaView edges={["bottom"]}>
+					<LoginForm
+						onClose={closeSheet}
+						onEnter={enterApp}
+					/>
 				</SafeAreaView>
+			</Animated.View>
 
-				{!isSheetVisible ? (
-					<SafeAreaView edges={["bottom"]} style={{ padding: 24 }}>
-						<Pressable
-							onPress={openSheet}
-							style={{
-								alignSelf: "center",
-								backgroundColor: colors.base.white,
-								paddingHorizontal: 20,
-								paddingVertical: 12,
-								borderRadius: 999,
-							}}>
-							<Text style={{ fontWeight: "700" }}>Abrir login</Text>
-						</Pressable>
-					</SafeAreaView>
-				) : null}
-
-				<Modal
-					animationType="slide"
-					transparent
-					visible={isSheetVisible}
-					onRequestClose={closeSheet}>
-					<View
+			{!isSheetVisible ? (
+				<SafeAreaView
+					edges={["bottom"]}
+					style={{
+						position: "absolute",
+						bottom: 0,
+						left: 0,
+						right: 0,
+						padding: 24,
+					}}>
+					<Pressable
+						onPress={openSheet}
 						style={{
-							flex: 1,
-							justifyContent: "flex-end",
-							backgroundColor: "rgba(0, 0, 0, 0.20)",
+							alignSelf: "center",
+							backgroundColor: colors.base.white,
+							paddingHorizontal: 20,
+							paddingVertical: 12,
+							borderRadius: 999,
 						}}>
-						<SafeAreaView edges={["bottom"]}>{form}</SafeAreaView>
-					</View>
-				</Modal>
-			</View>
-		</ImageBackground>
+						<Text style={{ fontWeight: "700" }}>Abrir login</Text>
+					</Pressable>
+				</SafeAreaView>
+			) : null}
+		</View>
 	);
 }

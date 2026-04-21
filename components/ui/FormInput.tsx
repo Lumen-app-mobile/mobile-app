@@ -3,88 +3,129 @@ import { Text, TextInput, TextInputProps, View } from "react-native";
 
 import colors from "@/constants/colors";
 
+type InputSize = "sm" | "md" | "lg";
+type InputState = "default" | "disabled" | "withIcon";
+
 interface InputProps extends Omit<TextInputProps, "editable"> {
 	label?: string;
-	variant?: "default" | "disabled" | "withIcon";
-	size?: "sm" | "md" | "lg";
+	state?: InputState;
+	size?: InputSize;
 	icon?: React.ReactNode;
 }
 
-// Centraliza las diferencias visuales por tamaño para no repetir lógica en el render.
+// Cada tamaño controla únicamente la geometría del campo.
 const sizeStyles = {
 	sm: {
-		label: "text-sm",
-		input: "text-sm",
-		icon: 16,
+		text: "text-sm",
+		paddingX: 12,
+		paddingY: 8,
 		borderWidth: 3,
+		iconSize: 16,
+		fontSize: 14,
+		lineHeight: 14,
 	},
 	md: {
-		label: "text-base",
-		input: "text-base",
-		icon: 18,
+		text: "text-base",
+		paddingX: 12,
+		paddingY: 8,
 		borderWidth: 4,
+		iconSize: 18,
+		fontSize: 16,
+		lineHeight: 16,
 	},
 	lg: {
-		label: "text-lg",
-		input: "text-lg",
-		icon: 24,
+		text: "text-lg",
+		paddingX: 12,
+		paddingY: 8,
 		borderWidth: 4,
+		iconSize: 24,
+		fontSize: 18,
+		lineHeight: 18,
 	},
 } as const;
 
-export default function FormInput({
-	label = "label",
-	variant = "default",
+// Cada estado controla apariencia y comportamiento, sin tocar layout.
+const stateStyles = {
+	default: {
+		borderColor: "border-base-black",
+		textColor: "text-base-black",
+		labelColor: "text-base-black",
+		editable: true,
+		showIcon: false,
+	},
+	disabled: {
+		borderColor: "border-secondary-v3",
+		textColor: "text-secondary-v3",
+		labelColor: "text-secondary-v3",
+		editable: false,
+		showIcon: false,
+	},
+	withIcon: {
+		borderColor: "border-base-black",
+		textColor: "text-base-black",
+		labelColor: "text-base-black",
+		editable: true,
+		showIcon: true,
+	},
+} as const;
+
+export default function TextField({
+	label,
+	state = "default",
 	size = "sm",
 	icon,
-	placeholder = "placeholder",
-	secureTextEntry = false,
 	style,
+	placeholder = "placeholder",
 	...textInputProps
 }: InputProps) {
-	// Obtiene la configuración visual correspondiente al tamaño seleccionado.
+	// La UI final sale de combinar un tamaño y un estado.
 	const currentSize = sizeStyles[size];
-	// Deriva estados simples para mantener el JSX más legible.
-	const isDisabled = variant === "disabled";
-	const showIcon = variant === "withIcon" && !!icon;
+	const currentState = stateStyles[state];
+	const showIcon = currentState.showIcon && !!icon;
 
 	return (
 		<View
-			className="flex-col items-start"
+			className="items-start"
 			style={{ gap: 5 }}>
-			{/* El label cambia de tamaño y color según el estado del input. */}
-			<Text
-				className={`font-mono ${currentSize.label} ${
-					isDisabled ? "text-secondary-v3" : "text-base-black"
-				}`}>
-				{label}
-			</Text>
+			{label ? (
+				<Text
+					className={`font-mono ${currentSize.text} ${currentState.labelColor}`}>
+					{label}
+				</Text>
+			) : null}
 
-			{/* Contenedor del campo: aplica borde y espaciado siguiendo el diseño de Figma. */}
 			<View
-				className={`flex-row items-center px-3 py-2 ${isDisabled ? "border-secondary-v3" : "border-base-black"}`}
+				className={`w-full flex-row items-center ${currentState.borderColor}`}
 				style={{
 					borderWidth: currentSize.borderWidth,
 					gap: 10,
+					paddingHorizontal: currentSize.paddingX,
+					paddingVertical: currentSize.paddingY,
 				}}>
-				{/* El icono solo se renderiza en la variante con icono y mantiene tamaño por variante. */}
+				{/* El icono solo aparece en el estado pensado para inputs con apoyo visual. */}
 				{showIcon ? (
-					<View style={{ height: currentSize.icon, width: currentSize.icon }}>
+					<View style={{ width: currentSize.iconSize, height: currentSize.iconSize }}>
 						{icon}
 					</View>
 				) : null}
 
-				{/* Se propagan las props nativas del TextInput y se ajustan estado/colores del sistema. */}
+				{/* Se resetea el padding nativo del TextInput para que el espaciado lo controle el contenedor. */}
 				<TextInput
 					{...textInputProps}
+					editable={currentState.editable}
 					placeholder={placeholder}
 					placeholderTextColor={colors.secondary.v3}
-					secureTextEntry={secureTextEntry}
-					editable={!isDisabled}
-					className={`min-w-[116px] flex-1 font-mono ${currentSize.input} ${
-						isDisabled ? "text-secondary-v3" : "text-base-black"
-					}`}
-					style={style}
+					className={`flex-1 font-mono ${currentSize.text} ${currentState.textColor}`}
+					style={[
+						{
+							fontSize: currentSize.fontSize,
+							lineHeight: currentSize.lineHeight,
+							margin: 0,
+							padding: 0,
+							textAlignVertical: "center",
+						},
+						style,
+					]}
 				/>
 			</View>
 		</View>

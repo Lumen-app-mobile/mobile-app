@@ -1,7 +1,29 @@
+import {
+	RedHatMono_400Regular,
+	RedHatMono_500Medium,
+	RedHatMono_700Bold,
+	useFonts,
+} from "@expo-google-fonts/red-hat-mono";
 import { Stack } from "expo-router";
-import React from "react";
+import * as SplashScreen from "expo-splash-screen";
+import React, { useEffect } from "react";
+import { View } from "react-native";
+
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+	const [fontsLoaded] = useFonts({
+		RedHatMono_400Regular,
+		RedHatMono_500Medium,
+		RedHatMono_700Bold,
+	});
+
+	useEffect(() => {
+		if (fontsLoaded) SplashScreen.hideAsync();
+	}, [fontsLoaded]);
+
+	if (!fontsLoaded) return <View />;
+
 	return (
 		<Stack screenOptions={{ headerShown: false }}>
 			<Stack.Screen name="index" />
