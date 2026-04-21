@@ -1,6 +1,7 @@
 import React from "react";
 import { Text, TextInput, TextInputProps, View } from "react-native";
-const colors = require("../../constants/colors");
+
+import colors from "@/constants/colors";
 
 interface InputProps extends Omit<TextInputProps, "editable"> {
 	label?: string;
