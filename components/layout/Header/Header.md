@@ -8,9 +8,12 @@ Muestra el logo de Lumen y un boton de notificaciones.
 
 ## Referencia Figma
 
-Nombre esperado en Figma: `Header`.
+- Archivo: `Manager-Finance`
+- Nombre en Figma: `Header`
+- Node principal: `36:489`
+- URL: https://www.figma.com/design/JbBnf8LdpmtQavzNqcRlmu/Manager-Finance?node-id=36-489&m=dev
 
-Ruta sugerida en Figma:
+Ruta sugerida:
 
 - `App / Layout / Header`
 
@@ -18,11 +21,24 @@ Ruta sugerida en Figma:
 
 ```txt
 Header
-├── Logo
-└── NotificationButton
-    ├── Container
-    └── BellIcon
+├── Container
+│   ├── Logo
+│   │   ├── Vector
+│   │   └── Heading 2
+│   │       └── lumen
+│   └── Icon Buttons
+│       └── NotificationButton
+│           └── BellIcon
 ```
+
+## Relacion codigo-Figma
+
+| Figma | Codigo |
+| --- | --- |
+| `Header` node `36:489` | `Header` |
+| `Vector + Heading 2` | `Logo` desde `assets/images/logo.svg` |
+| `button` | `Pressable` |
+| `notifications` | `BELL_SVG` |
 
 ## Props
 
@@ -34,9 +50,17 @@ Header
 
 | Elemento | Valor |
 | --- | --- |
+| Fondo header | `base.white` |
+| Borde inferior | `3px base.black` |
+| Padding X | `16` |
+| Padding top | `16` |
+| Padding bottom | `19` |
+| Logo | `173 x 50.42` |
 | Fondo boton | `primary.v1` |
-| Borde boton | `base.black` |
-| Icono | `base.black` |
+| Borde boton | `3px base.black` |
+| Tamano boton | `46 x 46` |
+| Padding boton | `11` |
+| Icono | `base.white` |
 | Sombra | Offset `4,4`, opacity `1`, radius `1` |
 
 ## Ejemplo

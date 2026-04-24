@@ -95,6 +95,31 @@ components/ui/Button/
 - Los componentes deben funcionar correctamente en mobile y, si aplica, en web.
 - Se deben respetar `SafeArea`, navegacion de Expo Router y patrones existentes del proyecto.
 
+## Implementacion desde Figma
+
+Cuando se implemente un componente a partir de Figma:
+
+- El nodo que se recibe se considera el nodo principal, no necesariamente la unica fuente de verdad.
+- Antes de escribir codigo, se debe revisar si el nodo principal contiene variantes, componentes hijos o estados.
+- Si existen variantes, se deben inspeccionar los nodos individuales de cada variante.
+- La implementacion debe basarse en las variantes individuales, no solo en el wrapper que las agrupa.
+- El `.md` del componente debe listar todos los nodos Figma usados.
+- Cada variante de Figma debe mapearse contra una prop del componente, normalmente `variant`, `state` o `size`.
+- No se debe marcar el componente como terminado solo porque TypeScript y lint pasen.
+- En componentes visuales pequenos o muy precisos, se deben usar estilos explicitos para medidas criticas: width, padding, gap, border, shadow, fontFamily, fontSize y lineHeight.
+- NativeWind se usara para estilos simples, pero si una clase no reproduce fielmente Figma, se usara `style` con valores exactos.
+
+Proceso obligatorio:
+
+1. Leer el nodo principal de Figma.
+2. Identificar variantes, estados y nodos hijos relevantes.
+3. Leer cada variante individual si existe.
+4. Extraer tokens y medidas antes de crear el componente.
+5. Crear `Componente.tsx`.
+6. Crear `Componente.md` con referencias a todos los nodos usados.
+7. Mostrar el componente en una pantalla de prueba si el usuario lo pide o si hace falta validar visualmente.
+8. Validar TypeScript, lint y comparacion visual contra Figma.
+
 ## Documentacion de componentes
 
 Cada componente reutilizable debe tener un `.md` explicando como funciona y como esta estructurado en Figma cuando exista referencia de diseno.

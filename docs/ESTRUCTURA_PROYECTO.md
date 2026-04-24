@@ -31,6 +31,7 @@ components/
     Button/
     FormInput/
     ItemLista/
+    StatCard/
 
 constants/
 
@@ -78,6 +79,7 @@ Ejemplos:
 - `Button/Button.tsx`
 - `FormInput/FormInput.tsx`
 - `ItemLista/ItemLista.tsx`
+- `StatCard/StatCard.tsx`
 - futuros componentes como `Card.tsx`, `IconButton.tsx`, `EmptyState.tsx`
 
 Usar esta carpeta para piezas pequenas, reutilizables y sin conocimiento fuerte de una pantalla concreta.
