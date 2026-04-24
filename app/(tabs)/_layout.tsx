@@ -1,4 +1,4 @@
-import BottomNavBar from "@/components/BottomNavBar";
+import BottomNavBar from "@/components/navigation/BottomNavBar/BottomNavBar";
 import { Tabs } from "expo-router";
 import React from "react";
 
