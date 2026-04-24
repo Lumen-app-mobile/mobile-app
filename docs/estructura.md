@@ -27,6 +27,93 @@ El criterio principal es: el codigo debe entenderse rapido por una persona que n
   - Que se debe rellenar cuando se cree algo nuevo dentro de esa carpeta.
 - Si se crea un componente reutilizable nuevo, tambien debe quedar reflejado el patron en `docs/ESTRUCTURA_PROYECTO.md` si cambia o amplia la estructura actual.
 
+## Flujo para crear o modificar documentacion
+
+Cuando se cree o modifique documentacion importante, se seguira un flujo de coautoria en tres fases:
+
+1. Contexto.
+2. Estructura y refinamiento.
+3. Prueba de lectura.
+
+### 1. Contexto
+
+Antes de escribir o cambiar un documento, hay que entender:
+
+- Que tipo de documento es: guia, decision tecnica, especificacion, README, documentacion de componente, etc.
+- Quien lo va a leer.
+- Que debe poder hacer o entender esa persona despues de leerlo.
+- Que archivos, Figma nodes, decisiones o restricciones influyen en el documento.
+- Si existe una plantilla que haya que respetar.
+
+Si falta contexto importante, se pregunta antes de escribir.
+
+### 2. Estructura y refinamiento
+
+La documentacion se trabaja por secciones, no como un bloque gigante.
+
+Para cada seccion:
+
+- Definir que debe cubrir.
+- Detectar si falta informacion.
+- Escribir solo lo necesario.
+- Eliminar relleno generico.
+- Evitar repetir informacion que ya esta clara en otro documento.
+- Hacer cambios quirurgicos sobre el texto existente cuando sea posible.
+
+No se debe reescribir un documento entero si basta con actualizar una seccion concreta.
+
+### 3. Prueba de lectura
+
+Antes de dar por buena una documentacion importante, se debe revisar como si la leyera alguien sin contexto previo.
+
+Comprobar:
+
+- Si se entiende el objetivo del documento.
+- Si se puede encontrar rapido la informacion importante.
+- Si hay supuestos no explicados.
+- Si hay contradicciones con otros documentos.
+- Si faltan ejemplos reales.
+- Si las rutas de archivos siguen existiendo.
+
+### Principios de documentacion
+
+- Una pregunta o decision a la vez: no mezclar varios problemas en una misma seccion.
+- Priorizar claridad sobre longitud.
+- Mantener la agencia del usuario: si el usuario prefiere un estilo o estructura, respetarlo salvo que rompa la utilidad del documento.
+- Cada frase debe aportar contexto, criterio o accion.
+- Evitar frases decorativas o genericamente correctas que no ayuden a trabajar en este repo.
+- Cuando se documente un cambio de codigo, incluir rutas reales y ejemplos reales.
+- Cuando una documentacion dependa de otra, enlazarla o mencionarla explicitamente.
+
+## Como modificar este documento
+
+Antes de cambiar `docs/estructura.md`, se debe aplicar el mismo flujo de documentacion:
+
+1. Contexto: identificar que problema real resuelve la regla.
+2. Ubicacion: colocar la regla en la seccion correcta.
+3. Redaccion: escribir la regla como una accion verificable.
+4. Consistencia: comprobar que no contradice `docs/ESTRUCTURA_PROYECTO.md`.
+5. Prueba de lectura: leer la regla como alguien sin contexto y confirmar que se entiende que hacer.
+
+Una regla nueva debe responder:
+
+- Cuando se aplica.
+- Que hay que hacer.
+- Donde hay que hacerlo.
+- Como se comprueba que se ha cumplido.
+
+Evitar reglas genericas como:
+
+```md
+- Revisar bien Figma.
+```
+
+Preferir reglas verificables como:
+
+```md
+- Si existen variantes en Figma, se deben inspeccionar los nodos individuales de cada variante antes de implementar.
+```
+
 ## Estructura general del codigo
 
 - El codigo debe estar agrupado por secciones siempre que sea posible.
