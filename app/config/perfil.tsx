@@ -7,10 +7,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "@/components/layout/Header/Header";
 import TextField from "@/components/ui/FormInput/FormInput";
 import colors from "@/constants/colors";
+import { type TranslationKey, useI18n } from "@/lib/i18n";
 
 type ProfileField = {
 	key: keyof ProfileDraft;
-	label: string;
+	labelKey: TranslationKey;
 	placeholder: string;
 	secureTextEntry?: boolean;
 };
@@ -31,7 +32,7 @@ type ProfileDraft = {
 type ConfigTab = {
 	href: "/(tabs)" | "/(tabs)/productos" | "/(tabs)/scan" | "/(tabs)/config";
 	icon: keyof typeof MaterialIcons.glyphMap;
-	label: string;
+	labelKey: TranslationKey;
 	isActive?: boolean;
 };
 
@@ -42,22 +43,22 @@ const CURRENT_PROFILE: ProfileData = {
 };
 
 const PROFILE_FIELDS: ProfileField[] = [
-	{ key: "name", label: "Nombre", placeholder: "placeholder" },
-	{ key: "email", label: "email", placeholder: "placeholder" },
-	{ key: "password", label: "Contraseña", placeholder: "placeholder", secureTextEntry: true },
+	{ key: "name", labelKey: "profile.name", placeholder: "placeholder" },
+	{ key: "email", labelKey: "profile.email", placeholder: "placeholder" },
+	{ key: "password", labelKey: "profile.password", placeholder: "placeholder", secureTextEntry: true },
 	{
 		key: "repeatedPassword",
-		label: "Repetir contraseña",
+		labelKey: "profile.repeatPassword",
 		placeholder: "placeholder",
 		secureTextEntry: true,
 	},
 ];
 
 const CONFIG_TABS: ConfigTab[] = [
-	{ href: "/(tabs)", icon: "home", label: "HOME" },
-	{ href: "/(tabs)/productos", icon: "list-alt", label: "PRODUCTOS" },
-	{ href: "/(tabs)/scan", icon: "qr-code", label: "SCAN" },
-	{ href: "/(tabs)/config", icon: "settings", label: "CONFIG", isActive: true },
+	{ href: "/(tabs)", icon: "home", labelKey: "tabs.home" },
+	{ href: "/(tabs)/productos", icon: "list-alt", labelKey: "tabs.products" },
+	{ href: "/(tabs)/scan", icon: "qr-code", labelKey: "tabs.scan" },
+	{ href: "/(tabs)/config", icon: "settings", labelKey: "tabs.config", isActive: true },
 ];
 
 function IconButton({
@@ -93,11 +94,19 @@ function createInitialDraft(): ProfileDraft {
 	};
 }
 
-function SaveButton({ onPress }: { onPress: () => void }) {
+function SaveButton({
+	label,
+	accessibilityLabel,
+	onPress,
+}: {
+	label: string;
+	accessibilityLabel: string;
+	onPress: () => void;
+}) {
 	return (
 		<Pressable
 			accessibilityRole="button"
-			accessibilityLabel="Aceptar cambios de perfil"
+			accessibilityLabel={accessibilityLabel}
 			onPress={onPress}
 			className="h-[46px] flex-row items-center gap-2 border-[3px] border-base-black bg-primary-v1 px-[19px] py-[11px] shadow-[4px_4px_0px_black]">
 			<MaterialIcons
@@ -106,7 +115,7 @@ function SaveButton({ onPress }: { onPress: () => void }) {
 				color={colors.base.white}
 			/>
 			<Text className="font-mono text-xs leading-4 text-base-white">
-				Aceptar
+				{label}
 			</Text>
 		</Pressable>
 	);
@@ -114,11 +123,13 @@ function SaveButton({ onPress }: { onPress: () => void }) {
 
 function ProfileFieldInput({
 	field,
+	label,
 	placeholder,
 	value,
 	onChangeText,
 }: {
 	field: ProfileField;
+	label: string;
 	placeholder: string;
 	value: string;
 	onChangeText: (value: string) => void;
@@ -126,7 +137,7 @@ function ProfileFieldInput({
 	return (
 		<View className="w-[264px]">
 			<TextField
-				label={field.label}
+				label={label}
 				size="sm"
 				placeholder={placeholder}
 				secureTextEntry={field.secureTextEntry}
@@ -139,10 +150,13 @@ function ProfileFieldInput({
 }
 
 function ConfigBottomNavigation() {
+	const { t } = useI18n();
+
 	return (
 		<View className="bg-base-white px-[10px] pb-[26px]">
 			<View className="w-full max-w-[448px] flex-row self-center border-[3px] border-base-black bg-base-white p-[3px] shadow-[4px_4px_1px_black]">
 				{CONFIG_TABS.map((tab) => {
+					const label = t(tab.labelKey);
 					const content = (
 						<View
 							className={`min-w-0 flex-1 items-center justify-center gap-1 p-3 ${
@@ -161,7 +175,7 @@ function ConfigBottomNavigation() {
 								className={`font-mono-bold text-xs uppercase leading-[15px] ${
 									tab.isActive ? "text-base-white" : "text-primary-v1"
 								}`}>
-								{tab.label}
+								{label}
 							</Text>
 						</View>
 					);
@@ -169,7 +183,7 @@ function ConfigBottomNavigation() {
 					if (tab.isActive) {
 						return (
 							<Pressable
-								key={tab.label}
+								key={tab.labelKey}
 								disabled
 								className="min-w-0 flex-1">
 								{content}
@@ -179,7 +193,7 @@ function ConfigBottomNavigation() {
 
 					return (
 						<Link
-							key={tab.label}
+							key={tab.labelKey}
 							href={tab.href}
 							asChild>
 							<Pressable className="min-w-0 flex-1">{content}</Pressable>
@@ -192,6 +206,7 @@ function ConfigBottomNavigation() {
 }
 
 export default function PerfilConfigScreen() {
+	const { t } = useI18n();
 	const [profile, setProfile] = useState<ProfileData>(CURRENT_PROFILE);
 	const [draft, setDraft] = useState<ProfileDraft>(() => createInitialDraft());
 
@@ -246,11 +261,11 @@ export default function PerfilConfigScreen() {
 						<View className="flex-row items-center gap-4">
 							<IconButton
 								icon="arrow-back"
-								accessibilityLabel="Volver a configuración"
+								accessibilityLabel={t("common.backToConfig")}
 								onPress={() => router.back()}
 							/>
 							<Text className="font-mono-bold text-4xl leading-[48px] text-base-black">
-								Perfil
+								{t("profile.title")}
 							</Text>
 						</View>
 					</View>
@@ -261,13 +276,18 @@ export default function PerfilConfigScreen() {
 								<ProfileFieldInput
 									key={field.key}
 									field={field}
+									label={t(field.labelKey)}
 									placeholder={getProfileFieldPlaceholder(field)}
 									value={draft[field.key]}
 									onChangeText={(value) => updateDraftField(field.key, value)}
 								/>
 							))}
 						</View>
-						<SaveButton onPress={saveProfileDraft} />
+						<SaveButton
+							label={t("common.accept")}
+							accessibilityLabel={t("profile.saveAccessibility")}
+							onPress={saveProfileDraft}
+						/>
 					</View>
 				</View>
 			</ScrollView>

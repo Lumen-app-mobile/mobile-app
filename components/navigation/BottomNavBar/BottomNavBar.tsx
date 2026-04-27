@@ -2,6 +2,8 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { type TranslationKey, useI18n } from "@/lib/i18n";
+
 // ── Constantes de diseño (de dataFigma.json) ────────────────────────────────
 
 const PRIMARY_V1 = "#4ECDC4";
@@ -16,13 +18,13 @@ type TabKey = "index" | "productos" | "scan" | "config";
 
 const TABS: {
 	key: TabKey;
-	label: string;
+	labelKey: TranslationKey;
 	icon: keyof typeof MaterialIcons.glyphMap;
 }[] = [
-	{ key: "index", label: "HOME", icon: "home" },
-	{ key: "productos", label: "PRODUCTOS", icon: "list-alt" },
-	{ key: "scan", label: "SCAN", icon: "qr-code" },
-	{ key: "config", label: "CONFIG", icon: "settings" },
+	{ key: "index", labelKey: "tabs.home", icon: "home" },
+	{ key: "productos", labelKey: "tabs.products", icon: "list-alt" },
+	{ key: "scan", labelKey: "tabs.scan", icon: "qr-code" },
+	{ key: "config", labelKey: "tabs.config", icon: "settings" },
 ];
 
 // ── Props ────────────────────────────────────────────────────────────────────
@@ -43,6 +45,7 @@ interface BottomNavBarProps {
 //   Padding tab:    12px (global.spacing.s3 = spacing.tailwind.4)
 
 export default function BottomNavBar({ state, navigation }: BottomNavBarProps) {
+	const { t } = useI18n();
 	const insets = useSafeAreaInsets();
 	const activeKey = state.routes[state.index]?.name as TabKey;
 
@@ -70,6 +73,7 @@ export default function BottomNavBar({ state, navigation }: BottomNavBarProps) {
 				}}>
 				{TABS.map((tab) => {
 					const isActive = activeKey === tab.key;
+					const label = t(tab.labelKey);
 
 					return (
 						<Pressable
@@ -98,7 +102,7 @@ export default function BottomNavBar({ state, navigation }: BottomNavBarProps) {
 									textTransform: "uppercase",
 									color: isActive ? WHITE : PRIMARY_V1,
 								}}>
-								{tab.label}
+								{label}
 							</Text>
 						</Pressable>
 					);

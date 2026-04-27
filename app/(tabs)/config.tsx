@@ -7,55 +7,56 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import TitleDecorator from "@/assets/images/Vector(1).svg";
 import Header from "@/components/layout/Header/Header";
 import colors from "@/constants/colors";
+import { type TranslationKey, useI18n } from "@/lib/i18n";
 
 type ConfigItem = {
-	label: string;
+	labelKey: TranslationKey;
 	icon: keyof typeof MaterialIcons.glyphMap;
 	href: Href;
 };
 
 type PermissionItem = {
 	key: "camera" | "storage" | "location";
-	label: string;
+	labelKey: TranslationKey;
 };
 
 const SYSTEM_ITEMS: ConfigItem[] = [
 	{
-		label: "Perfil",
+		labelKey: "config.profile",
 		icon: "person-outline",
 		href: "/config/perfil",
 	},
 	{
-		label: "Preferencias",
+		labelKey: "config.preferences",
 		icon: "tune",
 		href: "/config/preferencias",
 	},
 	{
-		label: "Notificaciones",
+		labelKey: "config.notifications",
 		icon: "notifications-none",
 		href: "/config/notificaciones",
 	},
 	{
-		label: "Categorias",
+		labelKey: "config.categories",
 		icon: "category",
 		href: "/config/categorias",
 	},
 	{
-		label: "Datos",
+		labelKey: "config.data",
 		icon: "dataset",
 		href: "/config/datos",
 	},
 	{
-		label: "Información",
+		labelKey: "config.information",
 		icon: "info-outline",
 		href: "/config/informacion",
 	},
 ];
 
 const PERMISSION_ITEMS: PermissionItem[] = [
-	{ key: "camera", label: "Acceso a Cámara" },
-	{ key: "storage", label: "Almacenamiento" },
-	{ key: "location", label: "Ubicación" },
+	{ key: "camera", labelKey: "permissions.camera" },
+	{ key: "storage", labelKey: "permissions.storage" },
+	{ key: "location", labelKey: "permissions.location" },
 ];
 
 function SectionHeading({ title }: { title: string }) {
@@ -75,7 +76,13 @@ function SectionHeading({ title }: { title: string }) {
 	);
 }
 
-function ConfigListItem({ label, icon, href }: ConfigItem) {
+function ConfigListItem({
+	label,
+	icon,
+	href,
+}: ConfigItem & {
+	label: string;
+}) {
 	return (
 		<Link
 			href={href}
@@ -142,6 +149,7 @@ function PermissionToggle({
 }
 
 export default function ConfigScreen() {
+	const { t } = useI18n();
 	const [permissions, setPermissions] = useState<Record<PermissionItem["key"], boolean>>({
 		camera: false,
 		location: false,
@@ -169,29 +177,30 @@ export default function ConfigScreen() {
 				<View className="gap-12 pb-8 pt-4">
 					<View className="px-4">
 						<Text className="font-mono-bold text-4xl leading-[48px] text-base-black">
-							configuración
+							{t("config.title")}
 						</Text>
 					</View>
 
 					<View className="gap-[10px] px-4">
-						<SectionHeading title="Sistema" />
+						<SectionHeading title={t("config.system")} />
 						<View className="w-[263px] gap-4">
 							{SYSTEM_ITEMS.map((item) => (
 								<ConfigListItem
-									key={item.label}
+									key={item.labelKey}
 									{...item}
+									label={t(item.labelKey)}
 								/>
 							))}
 						</View>
 					</View>
 
 					<View className="gap-4 px-4">
-						<SectionHeading title="Permisos de la app" />
+						<SectionHeading title={t("config.appPermissions")} />
 						<View className="w-[264px] gap-[18px] px-4">
 							{PERMISSION_ITEMS.map((permission) => (
 								<PermissionToggle
 									key={permission.key}
-									label={permission.label}
+									label={t(permission.labelKey)}
 									enabled={permissions[permission.key]}
 									onPress={() => togglePermission(permission.key)}
 								/>

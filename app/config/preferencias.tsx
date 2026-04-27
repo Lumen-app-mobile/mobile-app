@@ -1,16 +1,316 @@
-import { Stack } from "expo-router";
-import { Text, View } from "react-native";
+import { useState } from "react";
+import { MaterialIcons } from "@expo/vector-icons";
+import { Link, Stack, router } from "expo-router";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import Header from "@/components/layout/Header/Header";
+import colors from "@/constants/colors";
+import { type AppLanguage, LANGUAGE_OPTIONS, type TranslationKey, useI18n } from "@/lib/i18n";
+
+type ConfigTab = {
+	href: "/(tabs)" | "/(tabs)/productos" | "/(tabs)/scan" | "/(tabs)/config";
+	icon: keyof typeof MaterialIcons.glyphMap;
+	labelKey: TranslationKey;
+	isActive?: boolean;
+};
+
+type DropdownOption = {
+	label: string;
+	value: string;
+};
+
+type OpenDropdown = "language" | "currency" | null;
+
+const CONFIG_TABS: ConfigTab[] = [
+	{ href: "/(tabs)", icon: "home", labelKey: "tabs.home" },
+	{ href: "/(tabs)/productos", icon: "list-alt", labelKey: "tabs.products" },
+	{ href: "/(tabs)/scan", icon: "qr-code", labelKey: "tabs.scan" },
+	{ href: "/(tabs)/config", icon: "settings", labelKey: "tabs.config", isActive: true },
+];
+
+const CURRENCY_OPTIONS: DropdownOption[] = [
+	{ label: "Euro (EUR)", value: "eur" },
+	{ label: "US Dollar (USD)", value: "usd" },
+	{ label: "Pound Sterling (GBP)", value: "gbp" },
+	{ label: "Swiss Franc (CHF)", value: "chf" },
+	{ label: "Japanese Yen (JPY)", value: "jpy" },
+	{ label: "Mexican Peso (MXN)", value: "mxn" },
+	{ label: "Argentine Peso (ARS)", value: "ars" },
+];
+
+function IconButton({
+	icon,
+	accessibilityLabel,
+	onPress,
+}: {
+	icon: keyof typeof MaterialIcons.glyphMap;
+	accessibilityLabel: string;
+	onPress: () => void;
+}) {
+	return (
+		<Pressable
+			accessibilityRole="button"
+			accessibilityLabel={accessibilityLabel}
+			onPress={onPress}
+			className="h-[46px] w-[46px] items-center justify-center border-[3px] border-base-black bg-base-white shadow-[4px_4px_1px_black]">
+			<MaterialIcons
+				name={icon}
+				size={24}
+				color={colors.base.black}
+			/>
+		</Pressable>
+	);
+}
+
+function PreferenceToggle({
+	label,
+	enabled,
+	onPress,
+}: {
+	label: string;
+	enabled: boolean;
+	onPress: () => void;
+}) {
+	return (
+		<Pressable
+			accessibilityRole="switch"
+			accessibilityState={{ checked: enabled }}
+			accessibilityLabel={label}
+			onPress={onPress}
+			className="w-[259px] flex-row items-center justify-between">
+			<Text
+				numberOfLines={1}
+				className="shrink font-mono text-xs leading-[15px] text-base-black">
+				{label}
+			</Text>
+			<View
+				style={{
+					backgroundColor: enabled ? colors.primary.v1 : colors.secondary.v1,
+					borderRadius: 999,
+					height: 37,
+					justifyContent: "center",
+					paddingHorizontal: 6,
+					width: 76,
+				}}>
+				<View
+					style={{
+						alignSelf: enabled ? "flex-end" : "flex-start",
+						backgroundColor: colors.base.white,
+						borderRadius: 999,
+						height: 26,
+						width: 26,
+					}}
+				/>
+			</View>
+		</Pressable>
+	);
+}
+
+function PreferenceDropdown({
+	label,
+	options,
+	selectedValue,
+	isOpen,
+	onToggle,
+	onSelect,
+}: {
+	label: string;
+	options: DropdownOption[];
+	selectedValue: string;
+	isOpen: boolean;
+	onToggle: () => void;
+	onSelect: (option: DropdownOption) => void;
+}) {
+	return (
+		<View className="w-[259px]">
+			<Pressable
+				accessibilityRole="button"
+				accessibilityLabel={label}
+				accessibilityState={{ expanded: isOpen }}
+				onPress={onToggle}
+				className="h-[42px] w-full flex-row items-center justify-between border border-base-black bg-base-white px-4 py-2 shadow-[4px_4px_1px_black]">
+				<Text
+					numberOfLines={1}
+					className="shrink font-mono text-base leading-5 text-base-black">
+					{label}
+				</Text>
+				<MaterialIcons
+					name={isOpen ? "arrow-upward" : "arrow-downward"}
+					size={24}
+					color={colors.base.black}
+				/>
+			</Pressable>
+
+			{isOpen ? (
+				<View className="mt-1 w-full border border-base-black bg-base-white shadow-[4px_4px_1px_black]">
+					{options.map((option) => {
+						const isSelected = option.value === selectedValue;
+
+						return (
+							<Pressable
+								key={option.value}
+								accessibilityRole="button"
+								accessibilityState={{ selected: isSelected }}
+								onPress={() => onSelect(option)}
+								className={`flex-row items-center justify-between px-4 py-2 ${
+									isSelected ? "bg-primary-v1" : "bg-base-white"
+								}`}>
+								<Text
+									numberOfLines={1}
+									className={`shrink font-mono text-sm leading-[18px] ${
+										isSelected ? "text-base-white" : "text-base-black"
+									}`}>
+									{option.label}
+								</Text>
+								{isSelected ? (
+									<MaterialIcons
+										name="check"
+										size={18}
+										color={colors.base.white}
+									/>
+								) : null}
+							</Pressable>
+						);
+					})}
+				</View>
+			) : null}
+		</View>
+	);
+}
+
+function ConfigBottomNavigation() {
+	const { t } = useI18n();
+
+	return (
+		<View className="bg-base-white px-[10px] pb-[26px]">
+			<View className="w-full max-w-[448px] flex-row self-center border-[3px] border-base-black bg-base-white p-[3px] shadow-[4px_4px_1px_black]">
+				{CONFIG_TABS.map((tab) => {
+					const label = t(tab.labelKey);
+					const content = (
+						<View
+							className={`min-w-0 flex-1 items-center justify-center gap-1 p-3 ${
+								tab.isActive
+									? "border-[3px] border-primary-v1 bg-primary-v1"
+									: "border-[3px] border-primary-v1 bg-base-white"
+							}`}>
+							<MaterialIcons
+								name={tab.icon}
+								size={24}
+								color={tab.isActive ? colors.base.white : colors.primary.v1}
+							/>
+							<Text
+								numberOfLines={1}
+								adjustsFontSizeToFit
+								className={`font-mono-bold text-xs uppercase leading-[15px] ${
+									tab.isActive ? "text-base-white" : "text-primary-v1"
+								}`}>
+								{label}
+							</Text>
+						</View>
+					);
+
+					if (tab.isActive) {
+						return (
+							<Pressable
+								key={tab.labelKey}
+								disabled
+								className="min-w-0 flex-1">
+								{content}
+							</Pressable>
+						);
+					}
+
+					return (
+						<Link
+							key={tab.labelKey}
+							href={tab.href}
+							asChild>
+							<Pressable className="min-w-0 flex-1">{content}</Pressable>
+						</Link>
+					);
+				})}
+			</View>
+		</View>
+	);
+}
+
 export default function PreferenciasConfigScreen() {
+	const { language, setLanguage, t } = useI18n();
+	const [isDarkTheme, setIsDarkTheme] = useState(false);
+	const [currency, setCurrency] = useState(CURRENCY_OPTIONS[0]);
+	const [openDropdown, setOpenDropdown] = useState<OpenDropdown>(null);
+
+	const selectedLanguage =
+		LANGUAGE_OPTIONS.find((option) => option.value === language) ?? LANGUAGE_OPTIONS[0];
+
+	function handleNotificationsPress() {}
+
+	function toggleDropdown(dropdown: Exclude<OpenDropdown, null>) {
+		setOpenDropdown((currentDropdown) => (currentDropdown === dropdown ? null : dropdown));
+	}
+
+	function selectLanguage(option: DropdownOption) {
+		setLanguage(option.value as AppLanguage);
+		setOpenDropdown(null);
+	}
+
+	function selectCurrency(option: DropdownOption) {
+		setCurrency(option);
+		setOpenDropdown(null);
+	}
+
 	return (
 		<SafeAreaView className="flex-1 bg-base-white">
 			<Stack.Screen options={{ headerShown: false }} />
-			<View className="flex-1 justify-center px-4">
-				<Text className="font-mono-bold text-4xl leading-[48px] text-base-black">
-					Preferencias
-				</Text>
-			</View>
+			<Header onNotificationsPress={handleNotificationsPress} />
+
+			<ScrollView
+				className="flex-1"
+				showsVerticalScrollIndicator={false}
+				alwaysBounceVertical={false}
+				contentContainerClassName="pb-8">
+				<View className="gap-4 pt-4">
+					<View className="w-full px-4">
+						<View className="flex-row items-center gap-4">
+							<IconButton
+								icon="arrow-back"
+								accessibilityLabel={t("common.backToConfig")}
+								onPress={() => router.back()}
+							/>
+							<Text className="font-mono-bold text-[34px] leading-[48px] text-base-black">
+								{t("preferences.title")}
+							</Text>
+						</View>
+					</View>
+
+					<View className="w-full gap-[18px] px-4">
+						<PreferenceToggle
+							label={t("preferences.darkTheme")}
+							enabled={isDarkTheme}
+							onPress={() => setIsDarkTheme((currentValue) => !currentValue)}
+						/>
+						<PreferenceDropdown
+							label={selectedLanguage.label}
+							options={LANGUAGE_OPTIONS}
+							selectedValue={language}
+							isOpen={openDropdown === "language"}
+							onToggle={() => toggleDropdown("language")}
+							onSelect={selectLanguage}
+						/>
+						<PreferenceDropdown
+							label={currency.label}
+							options={CURRENCY_OPTIONS}
+							selectedValue={currency.value}
+							isOpen={openDropdown === "currency"}
+							onToggle={() => toggleDropdown("currency")}
+							onSelect={selectCurrency}
+						/>
+					</View>
+				</View>
+			</ScrollView>
+
+			<ConfigBottomNavigation />
 		</SafeAreaView>
 	);
 }

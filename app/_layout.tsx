@@ -9,6 +9,8 @@ import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect } from "react";
 import { View } from "react-native";
 
+import { I18nProvider } from "@/lib/i18n";
+
 import "../global.css";
 
 SplashScreen.preventAutoHideAsync();
@@ -27,11 +29,13 @@ export default function RootLayout() {
 	if (!fontsLoaded) return <View />;
 
 	return (
-		<Stack screenOptions={{ headerShown: false }}>
-			<Stack.Screen name="index" />
-			<Stack.Screen name="login" />
-			<Stack.Screen name="(tabs)" />
-			<Stack.Screen name="config" />
-		</Stack>
+		<I18nProvider>
+			<Stack screenOptions={{ headerShown: false }}>
+				<Stack.Screen name="index" />
+				<Stack.Screen name="login" />
+				<Stack.Screen name="(tabs)" />
+				<Stack.Screen name="config" />
+			</Stack>
+		</I18nProvider>
 	);
 }
