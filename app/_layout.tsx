@@ -9,6 +9,8 @@ import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect } from "react";
 import { View } from "react-native";
 
+import "../global.css";
+
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -29,6 +31,7 @@ export default function RootLayout() {
 			<Stack.Screen name="index" />
 			<Stack.Screen name="login" />
 			<Stack.Screen name="(tabs)" />
+			<Stack.Screen name="config" />
 		</Stack>
 	);
 }
