@@ -1,11 +1,16 @@
 import { Pressable, Text, View } from "react-native";
 
 import colors from "@/constants/colors";
+import AhorroIndicator from "../../../assets/images/Property 1=ahorro.svg";
+import ObligacionIndicator from "../../../assets/images/Property 1=obligacion.svg";
+import OcioIndicator from "../../../assets/images/Property 1=ocio.svg";
 
 type ItemListaVariant = "default" | "listHeader";
+type ItemListaCategory = "obligacion" | "ahorro" | "ocio";
 
 interface ItemListaProps {
 	variant?: ItemListaVariant;
+	category?: ItemListaCategory;
 	title?: string;
 	description?: string;
 	price?: string;
@@ -21,33 +26,34 @@ const ITEM_MIN_WIDTH = 160;
 const PADDING_X = 8;
 const PADDING_Y = 12;
 const CONTENT_GAP = 8;
-const TRIANGLE_WIDTH = 30;
-const TRIANGLE_HEIGHT = 26;
+const INDICATOR_WIDTH = 30;
+const INDICATOR_HEIGHT = 26;
 const BODY_FONT_SIZE = 16;
 const BODY_LINE_HEIGHT = 20;
 const META_FONT_SIZE = 12;
 const META_LINE_HEIGHT = 15;
 const FONT_FAMILY = "RedHatMono_500Medium";
 
-function Indicador() {
+const indicatorByCategory = {
+	obligacion: ObligacionIndicator,
+	ahorro: AhorroIndicator,
+	ocio: OcioIndicator,
+} as const;
+
+function Indicador({ category }: { category: ItemListaCategory }) {
+	const Indicator = indicatorByCategory[category];
+
 	return (
-		<View
-			style={{
-				width: 0,
-				height: 0,
-				borderLeftWidth: TRIANGLE_WIDTH / 2,
-				borderRightWidth: TRIANGLE_WIDTH / 2,
-				borderBottomWidth: TRIANGLE_HEIGHT,
-				borderLeftColor: "transparent",
-				borderRightColor: "transparent",
-				borderBottomColor: colors.category.obligacion.v1,
-			}}
+		<Indicator
+			width={INDICATOR_WIDTH}
+			height={INDICATOR_HEIGHT}
 		/>
 	);
 }
 
 export default function ItemLista({
 	variant = "default",
+	category = "obligacion",
 	title = "listaItem",
 	description = "listaItem",
 	price = "???€",
@@ -133,7 +139,7 @@ export default function ItemLista({
 				</View>
 			</View>
 
-			{isDefault && showIndicator ? <Indicador /> : null}
+			{isDefault && showIndicator ? <Indicador category={category} /> : null}
 		</Pressable>
 	);
 }

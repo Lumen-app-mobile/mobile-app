@@ -15,6 +15,14 @@ app/
   _layout.tsx
   index.tsx
   login.tsx
+  config/
+    _layout.tsx
+    categorias.tsx
+    datos.tsx
+    informacion.tsx
+    notificaciones.tsx
+    perfil.tsx
+    preferencias.tsx
   (tabs)/
     _layout.tsx
     index.tsx
@@ -53,6 +61,13 @@ Ejemplos:
 - `app/_layout.tsx`: layout raiz de la app.
 - `app/index.tsx`: entrada inicial.
 - `app/login.tsx`: pantalla de login.
+- `app/config/_layout.tsx`: stack interno de subpantallas de configuracion.
+- `app/config/perfil.tsx`: subpantalla de configuracion de perfil.
+- `app/config/preferencias.tsx`: subpantalla de preferencias.
+- `app/config/notificaciones.tsx`: subpantalla de notificaciones.
+- `app/config/categorias.tsx`: subpantalla de categorias.
+- `app/config/datos.tsx`: subpantalla de datos.
+- `app/config/informacion.tsx`: subpantalla de informacion.
 - `app/(tabs)/_layout.tsx`: configuracion de tabs.
 - `app/(tabs)/index.tsx`: pantalla Home.
 - `app/(tabs)/productos.tsx`: pantalla Productos.

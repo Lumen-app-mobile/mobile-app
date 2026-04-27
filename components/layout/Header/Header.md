@@ -74,4 +74,5 @@ import Header from "@/components/layout/Header/Header";
 ## Notas
 
 - Este componente pertenece a `components/layout` porque define una zona comun de pantalla.
+- El header usa una fila con boton fijo a la derecha para evitar que el boton de notificaciones salte debajo del logo.
 - Si el header gana navegacion, avatar o menu, documentar aqui las nuevas partes de Figma.

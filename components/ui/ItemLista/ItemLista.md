@@ -43,6 +43,7 @@ ItemLista
 | Prop | Tipo | Default | Descripcion |
 | --- | --- | --- | --- |
 | `variant` | `"default" | "listHeader"` | `"default"` | Define si es item normal o cabecera |
+| `category` | `"obligacion" | "ahorro" | "ocio"` | `"obligacion"` | Define el icono indicador importado desde assets |
 | `title` | `string` | `"listaItem"` | Texto principal |
 | `description` | `string` | `"listaItem"` | Texto superior en variante `default` |
 | `price` | `string` | `"???€"` | Precio mostrado junto al titulo |
@@ -68,7 +69,7 @@ Estructura visual:
 - Descripcion superior en `secondary.v2`.
 - Titulo principal en negro.
 - Precio en `secondary.v2`.
-- Indicador triangular de categoria `obligacion`.
+- Indicador SVG de categoria, por defecto `obligacion`.
 
 ### `listHeader`
 
@@ -93,7 +94,9 @@ Estructura visual:
 | Texto secundario | `global/color/secondary/v2` | `colors.secondary.v2` / `text-secondary-v2` |
 | Texto principal | `global/color/base/black` | `colors.base.black` / `text-base-black` |
 | Texto header | `global/color/base/white` | `colors.base.white` / `text-base-white` |
-| Indicador | `global/color/category_obligacion/v1` | `colors.category.obligacion.v1` |
+| Indicador obligacion | `global/color/category_obligacion/v1` | `assets/images/Property 1=obligacion.svg` |
+| Indicador ahorro | `global/color/category_ahorro/v1` | `assets/images/Property 1=ahorro.svg` |
+| Indicador ocio | `global/color/category_ocio/v1` | `assets/images/Property 1=ocio.svg` |
 | Borde brutal | `movil/border_brutal` | `3` |
 | Sombra | `DROP_SHADOW 4,4,1` | `shadowOffset`, `shadowRadius`, `elevation` |
 
@@ -117,6 +120,7 @@ Estructura visual:
 import ItemLista from "@/components/ui/ItemLista/ItemLista";
 
 <ItemLista
+  category="obligacion"
   title="Alquiler"
   description="Obligacion"
   price="850€"
@@ -128,6 +132,6 @@ import ItemLista from "@/components/ui/ItemLista/ItemLista";
 
 ## Notas
 
-- El indicador se ha implementado como triangulo con bordes en React Native para evitar depender de un asset remoto temporal de Figma.
+- El indicador se importa desde los SVG locales de `assets/images`.
 - El componente usa `Pressable` aunque `onPress` sea opcional para mantener una unica raiz interactiva.
-- Si se anaden nuevas categorias, el indicador deberia aceptar una prop de categoria y mapearla contra `colors.category`.
+- Si se anaden nuevas categorias, se debe anadir el SVG local y mapearlo en `indicatorByCategory`.
