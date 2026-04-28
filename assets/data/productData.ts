@@ -1,0 +1,68 @@
+import { Producto } from "@/models/product";
+
+export const demoProducts: Producto[] = [
+	{
+		id: "apple-macbook-pro-m5",
+		brand: "Apple Inc",
+		name: "Macbook pro M5",
+		price: 1900,
+		date: "2026-04-19",
+		category: "obligacion",
+	},
+	{
+		id: "mercadona-ternera-500gr",
+		brand: "Mercadona",
+		name: "Ternera 500gr",
+		price: 30,
+		date: "2026-03-28",
+		category: "obligacion",
+	},
+	{
+		id: "my-investor-fondos-indexados",
+		brand: "My investor",
+		name: "Fondos indexados",
+		price: 100,
+		date: "2026-04-09",
+		category: "ahorro",
+	},
+	{
+		id: "logitech-mx-keyboard",
+		brand: "Logitech",
+		name: "MX keyboard",
+		price: 99,
+		date: "2026-02-17",
+		category: "ocio",
+	},
+	{
+		id: "logitech-raton-logitech",
+		brand: "Logitech",
+		name: "Ratón Logitech",
+		price: 84,
+		date: "2026-04-24",
+		category: "ocio",
+	},
+	{
+		id: "mercadona-pollo-250gr",
+		brand: "Mercadona",
+		name: "Pollo 250gr",
+		price: 4.56,
+		date: "2026-04-27",
+		category: "obligacion",
+	},
+	{
+		id: "mercadona-12-huevos-frescos",
+		brand: "Mercadona",
+		name: "12 huevos frescos",
+		price: 6,
+		date: "2026-04-02",
+		category: "obligacion",
+	},
+	{
+		id: "tabacos-sbd-winston-picadura",
+		brand: "Tabacos SBD",
+		name: "winston Picadura",
+		price: 5.45,
+		date: "2026-03-11",
+		category: "ocio",
+	},
+];

@@ -1,12 +1,41 @@
-import { useEffect, useMemo, useState } from "react";
 import { MaterialIcons } from "@expo/vector-icons";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import {
+	BottomSheetBackdrop,
+	BottomSheetModal,
+	BottomSheetScrollView,
+	BottomSheetTextInput,
+	BottomSheetView,
+	type BottomSheetBackdropProps,
+} from "@gorhom/bottom-sheet";
+import { router } from "expo-router";
+import {
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+	type RefObject,
+} from "react";
+import {
+	Image,
+	Keyboard,
+	Modal,
+	Pressable,
+	ScrollView,
+	Text,
+	View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { demoProducts } from "@/assets/data/productData";
+import AhorroIndicator from "@/assets/images/Property 1=ahorro.svg";
+import ObligacionIndicator from "@/assets/images/Property 1=obligacion.svg";
+import OcioIndicator from "@/assets/images/Property 1=ocio.svg";
+import TitleDecorator from "@/assets/images/Vector(1).svg";
 import Header from "@/components/layout/Header/Header";
 import TextField from "@/components/ui/FormInput/FormInput";
 import colors from "@/constants/colors";
-import TitleDecorator from "../../assets/images/Vector(1).svg";
+import { ProductCategory, Producto } from "@/models/product";
 
 type StatStatus = "success" | "warning" | "danger";
 
@@ -17,51 +46,48 @@ type StatSummary = {
 	status: StatStatus;
 };
 
-type ProductItem = {
-	brand: string;
-	name: string;
-	price: string;
-	rank?: 1 | 2 | 3;
-};
-
 type ProductosData = {
-	filters: string[];
+	filters: ProductFilter[];
 	stats: [StatSummary, StatSummary, StatSummary];
-	mostExpensiveItems: ProductItem[];
-	mostSoldItems: ProductItem[];
 };
 
-// Cambia solo esta URL cuando tengas el endpoint real.
-// La respuesta debe tener la misma forma que FALLBACK_PRODUCTOS_DATA.
-const PRODUCTOS_DATA_URL = "";
-
-const FALLBACK_PRODUCTOS_DATA: ProductosData = {
-	filters: ["Obligaciones", "Ocio", "Ahorros", "Todos"],
-	stats: [
-		{ label: "Obligaciones", current: "35%", target: "50%", status: "success" },
-		{ label: "Ocio", current: "20%", target: "30%", status: "warning" },
-		{ label: "Ahorros", current: "1%", target: "20%", status: "danger" },
-	],
-	mostExpensiveItems: [
-		{ brand: "Apple Inc", name: "Macbook pro M5", price: "1900€" },
-		{ brand: "Mercadona", name: "Ternera 500gr", price: "30€" },
-		{ brand: "My investor", name: "Fondos indexados", price: "100€" },
-		{ brand: "Logitech", name: "MX keyboard", price: "99€" },
-		{ brand: "Logitech", name: "Ratón Logitech", price: "84€" },
-	],
-	mostSoldItems: [
-		{ brand: "Mercadona", name: "Pollo 250gr", price: "4.56€", rank: 1 },
-		{ brand: "Mercadona", name: "12 huevos frescos", price: "6€", rank: 2 },
-		{ brand: "Tabacos SBD", name: "winston Picadura", price: "5,45€", rank: 3 },
-	],
+type ProductFilter = "todos" | ProductCategory;
+type ExtraFilters = {
+	selectedBrands: string[];
+	minPrice: string;
+	maxPrice: string;
 };
 
-const EMPTY_PRODUCTOS_DATA: ProductosData = {
-	filters: [],
-	stats: FALLBACK_PRODUCTOS_DATA.stats,
-	mostExpensiveItems: [],
-	mostSoldItems: [],
+const CATEGORY_LABELS: Record<ProductCategory, string> = {
+	obligacion: "Obligaciones",
+	ahorro: "Ahorros",
+	ocio: "Ocio",
 };
+
+const FILTER_LABELS: Record<ProductFilter, string> = {
+	todos: "Todos",
+	...CATEGORY_LABELS,
+};
+
+const FILTERS: ProductFilter[] = ["todos", "obligacion", "ahorro", "ocio"];
+const EASTER_EGG_TAP_TARGET = 10;
+
+const indicatorByCategory = {
+	obligacion: ObligacionIndicator,
+	ahorro: AhorroIndicator,
+	ocio: OcioIndicator,
+} as const;
+
+const currencyFormatter = new Intl.NumberFormat("es-ES", {
+	style: "currency",
+	currency: "EUR",
+});
+
+const dateFormatter = new Intl.DateTimeFormat("es-ES", {
+	day: "2-digit",
+	month: "short",
+	year: "numeric",
+});
 
 const statusColors = {
 	success: "text-feedback-success-v1",
@@ -69,48 +95,140 @@ const statusColors = {
 	danger: "text-feedback-danger-v1",
 } as const;
 
-function isProductosData(data: unknown): data is ProductosData {
-	if (!data || typeof data !== "object") return false;
+const filterIconByFilter: Record<
+	ProductFilter,
+	keyof typeof MaterialIcons.glyphMap
+> = {
+	todos: "apps",
+	obligacion: "lock",
+	ahorro: "savings",
+	ocio: "celebration",
+};
 
-	const candidate = data as ProductosData;
-
-	return (
-		Array.isArray(candidate.filters) &&
-		Array.isArray(candidate.stats) &&
-		candidate.stats.length >= 3 &&
-		Array.isArray(candidate.mostExpensiveItems) &&
-		Array.isArray(candidate.mostSoldItems)
-	);
+function formatPrice(price: Producto["price"]) {
+	return currencyFormatter.format(price);
 }
 
-async function fetchProductosData(url: string): Promise<ProductosData> {
-	const response = await fetch(url);
+function formatProductDate(date: Producto["date"]) {
+	return dateFormatter.format(new Date(`${date}T00:00:00`));
+}
 
-	if (!response.ok) {
-		throw new Error(`No se pudieron cargar productos: ${response.status}`);
-	}
+function sortProductsByDate(products: Producto[]) {
+	return [...products].sort((firstProduct, secondProduct) => {
+		return Date.parse(secondProduct.date) - Date.parse(firstProduct.date);
+	});
+}
 
-	const data: unknown = await response.json();
+function sortProductsByPrice(products: Producto[]) {
+	return [...products].sort((firstProduct, secondProduct) => {
+		return secondProduct.price - firstProduct.price;
+	});
+}
 
-	if (!isProductosData(data)) {
-		throw new Error("La respuesta de productos no tiene el formato esperado");
-	}
+function buildProductosData(products: Producto[]): ProductosData {
+	const productCount = products.length;
+	const totalPrice = products.reduce(
+		(total, product) => total + product.price,
+		0,
+	);
+	const averagePrice = productCount ? totalPrice / productCount : 0;
+	const maxPrice = products.reduce(
+		(max, product) => Math.max(max, product.price),
+		0,
+	);
 
 	return {
-		filters: data.filters,
-		stats: [data.stats[0], data.stats[1], data.stats[2]],
-		mostExpensiveItems: data.mostExpensiveItems,
-		mostSoldItems: data.mostSoldItems,
+		filters: FILTERS,
+		stats: [
+			{
+				label: "Productos",
+				current: String(productCount),
+				target: "Total",
+				status: "success",
+			},
+			{
+				label: "Precio medio",
+				current: formatPrice(averagePrice),
+				target: "Media",
+				status: "warning",
+			},
+			{
+				label: "Más caro",
+				current: formatPrice(maxPrice),
+				target: "Max",
+				status: "danger",
+			},
+		],
 	};
 }
 
-function filterItemsByQuery(items: ProductItem[], query: string) {
+function filterProductsByCategory(
+	products: Producto[],
+	selectedFilter: ProductFilter,
+) {
+	if (selectedFilter === "todos") return products;
+
+	return products.filter((product) => product.category === selectedFilter);
+}
+
+function parsePriceFilter(value: string) {
+	const normalizedValue = value.trim().replace(",", ".");
+
+	if (!normalizedValue) return null;
+
+	const parsedValue = Number(normalizedValue);
+
+	return Number.isFinite(parsedValue) ? parsedValue : null;
+}
+
+function filterProductsByExtras(
+	products: Producto[],
+	{ selectedBrands, minPrice, maxPrice }: ExtraFilters,
+) {
+	const minPriceValue = parsePriceFilter(minPrice);
+	const maxPriceValue = parsePriceFilter(maxPrice);
+
+	return products.filter((product) => {
+		const matchesBrand =
+			selectedBrands.length === 0 || selectedBrands.includes(product.brand);
+		const matchesMinPrice =
+			minPriceValue === null || product.price >= minPriceValue;
+		const matchesMaxPrice =
+			maxPriceValue === null || product.price <= maxPriceValue;
+
+		return matchesBrand && matchesMinPrice && matchesMaxPrice;
+	});
+}
+
+function filterProductsByQuery(products: Producto[], query: string) {
 	const normalizedQuery = query.trim().toLowerCase();
 
-	if (!normalizedQuery) return items;
+	if (!normalizedQuery) return products;
 
-	return items.filter((item) =>
-		`${item.brand} ${item.name} ${item.price}`.toLowerCase().includes(normalizedQuery),
+	return products.filter((product) =>
+		[
+			product.brand,
+			product.name,
+			formatPrice(product.price),
+			product.category,
+			CATEGORY_LABELS[product.category],
+			formatProductDate(product.date),
+		]
+			.join(" ")
+			.toLowerCase()
+			.includes(normalizedQuery),
+	);
+}
+
+function getUniqueBrands(products: Producto[]) {
+	return Array.from(new Set(products.map((product) => product.brand))).sort();
+}
+
+function hasExtraFilters({ selectedBrands, minPrice, maxPrice }: ExtraFilters) {
+	return (
+		selectedBrands.length > 0 ||
+		minPrice.trim().length > 0 ||
+		maxPrice.trim().length > 0
 	);
 }
 
@@ -124,30 +242,418 @@ function SearchIcon() {
 	);
 }
 
-function FilterButton({ label }: { label: string }) {
+function CategoryIndicator({ category }: { category: ProductCategory }) {
+	const Indicator = indicatorByCategory[category];
+
+	return (
+		<Indicator
+			width={30}
+			height={26}
+		/>
+	);
+}
+
+function FilterButton({
+	filter,
+	active,
+	onPress,
+}: {
+	filter: ProductFilter;
+	active: boolean;
+	onPress: () => void;
+}) {
+	const iconColor = active ? colors.base.white : colors.base.black;
+
 	return (
 		<Pressable
-			className="flex-row items-center gap-2 border-[3px] border-base-black bg-primary-v1 px-[19px] py-[11px] shadow-[4px_4px_0px_black]">
+			accessibilityRole="button"
+			accessibilityState={{ selected: active }}
+			onPress={onPress}
+			className={`flex-row items-center gap-2 border-[3px] border-base-black px-[19px] py-[11px] shadow-[4px_4px_0px_black] ${
+				active ? "bg-primary-v1" : "bg-base-white"
+			}`}>
 			<MaterialIcons
-				name={label === "Ocio" ? "person-outline" : "credit-card"}
+				name={filterIconByFilter[filter]}
 				size={24}
-				color={colors.base.white}
+				color={iconColor}
 			/>
 			<Text
 				numberOfLines={1}
-				className="font-mono text-xs leading-[16px] text-base-white">
+				className={`font-mono text-xs leading-[16px] ${
+					active ? "text-base-white" : "text-base-black"
+				}`}>
+				{FILTER_LABELS[filter]}
+			</Text>
+		</Pressable>
+	);
+}
+
+function ExtraFiltersButton({
+	active,
+	onPress,
+}: {
+	active: boolean;
+	onPress: () => void;
+}) {
+	const iconColor = active ? colors.base.white : colors.base.black;
+
+	return (
+		<Pressable
+			accessibilityRole="button"
+			accessibilityState={{ selected: active }}
+			onPress={onPress}
+			className={`flex-row items-center gap-2 border-[3px] border-base-black px-[19px] py-[11px] shadow-[4px_4px_0px_black] ${
+				active ? "bg-primary-v1" : "bg-base-white"
+			}`}>
+			<MaterialIcons
+				name="tune"
+				size={24}
+				color={iconColor}
+			/>
+			<Text
+				numberOfLines={1}
+				className={`font-mono text-xs leading-[16px] ${
+					active ? "text-base-white" : "text-base-black"
+				}`}>
+				Filtros extra
+			</Text>
+		</Pressable>
+	);
+}
+
+function BrandChip({
+	brand,
+	selected,
+	onPress,
+}: {
+	brand: string;
+	selected: boolean;
+	onPress: () => void;
+}) {
+	return (
+		<Pressable
+			accessibilityRole="button"
+			accessibilityState={{ selected }}
+			onPress={onPress}
+			className={`border-[3px] border-base-black px-3 py-2 ${
+				selected ? "bg-primary-v1" : "bg-base-white"
+			}`}>
+			<Text
+				numberOfLines={1}
+				className={`font-mono text-xs leading-[15px] ${
+					selected ? "text-base-white" : "text-base-black"
+				}`}>
+				{brand}
+			</Text>
+		</Pressable>
+	);
+}
+
+function SheetButton({
+	label,
+	icon,
+	variant,
+	onPress,
+}: {
+	label: string;
+	icon: keyof typeof MaterialIcons.glyphMap;
+	variant: "primary" | "secondary";
+	onPress: () => void;
+}) {
+	const isPrimary = variant === "primary";
+
+	return (
+		<Pressable
+			accessibilityRole="button"
+			accessibilityLabel={label}
+			onPress={onPress}
+			className={`h-[46px] flex-1 flex-row items-center justify-center gap-2 border-[3px] border-base-black px-[14px] py-[10px] shadow-[4px_4px_1px_black] ${
+				isPrimary ? "bg-primary-v1" : "bg-base-white"
+			}`}>
+			<MaterialIcons
+				name={icon}
+				size={22}
+				color={isPrimary ? colors.base.white : colors.base.black}
+			/>
+			<Text
+				numberOfLines={1}
+				className={`font-mono-bold text-xs leading-4 ${
+					isPrimary ? "text-base-white" : "text-base-black"
+				}`}>
 				{label}
 			</Text>
 		</Pressable>
 	);
 }
 
+function SheetPriceInput({
+	label,
+	value,
+	onChangeText,
+	placeholder,
+}: {
+	label: string;
+	value: string;
+	onChangeText: (value: string) => void;
+	placeholder: string;
+}) {
+	return (
+		<View
+			className="items-start"
+			style={{ gap: 5 }}>
+			<Text className="font-mono text-sm text-base-black">{label}</Text>
+			<View
+				className="w-full border-base-black"
+				style={{
+					borderWidth: 3,
+					paddingHorizontal: 12,
+					paddingVertical: 8,
+				}}>
+				<BottomSheetTextInput
+					value={value}
+					onChangeText={onChangeText}
+					placeholder={placeholder}
+					placeholderTextColor={colors.secondary.v3}
+					keyboardType="numeric"
+					style={{
+						color: colors.base.black,
+						fontFamily: "RedHatMono_400Regular",
+						fontSize: 14,
+						lineHeight: 14,
+						margin: 0,
+						padding: 0,
+					}}
+				/>
+			</View>
+		</View>
+	);
+}
+
+function ExtraFiltersSheet({
+	brands,
+	bottomSheetModalRef,
+	filters,
+	onApply,
+	onClose,
+	onClear,
+	onMaxPriceChange,
+	onMinPriceChange,
+	onToggleBrand,
+}: {
+	brands: string[];
+	bottomSheetModalRef: RefObject<BottomSheetModal | null>;
+	filters: ExtraFilters;
+	onApply: () => void;
+	onClose: () => void;
+	onClear: () => void;
+	onMaxPriceChange: (value: string) => void;
+	onMinPriceChange: (value: string) => void;
+	onToggleBrand: (brand: string) => void;
+}) {
+	const snapPoints = useMemo(() => ["50%", "90%"], []);
+	const renderBackdrop = useCallback(
+		(props: BottomSheetBackdropProps) => (
+			<BottomSheetBackdrop
+				{...props}
+				appearsOnIndex={0}
+				disappearsOnIndex={-1}
+				opacity={0.5}
+				pressBehavior="close"
+			/>
+		),
+		[],
+	);
+
+	useEffect(() => {
+		const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
+			bottomSheetModalRef.current?.snapToIndex(1);
+		});
+		const hideSubscription = Keyboard.addListener("keyboardDidHide", () => {
+			bottomSheetModalRef.current?.snapToIndex(0);
+		});
+
+		return () => {
+			showSubscription.remove();
+			hideSubscription.remove();
+		};
+	}, [bottomSheetModalRef]);
+
+	return (
+		<BottomSheetModal
+			ref={bottomSheetModalRef}
+			index={0}
+			snapPoints={snapPoints}
+			enableDynamicSizing={false}
+			enablePanDownToClose
+			keyboardBehavior="interactive"
+			keyboardBlurBehavior="restore"
+			android_keyboardInputMode="adjustResize"
+			backdropComponent={renderBackdrop}
+			backgroundStyle={{
+				backgroundColor: colors.base.white,
+				borderColor: colors.base.black,
+				borderTopLeftRadius: 28,
+				borderTopRightRadius: 28,
+				borderWidth: 3,
+			}}
+			handleIndicatorStyle={{
+				backgroundColor: colors.primary.v3,
+				height: 6,
+				width: 48,
+			}}>
+			<BottomSheetView style={{ flex: 1, paddingHorizontal: 20 }}>
+				<View className="w-full flex-row items-center justify-between gap-3 pb-4">
+					<Text
+						numberOfLines={1}
+						adjustsFontSizeToFit
+						className="min-w-0 flex-1 font-mono-bold text-2xl leading-[32px] text-base-black">
+						Filtros extra
+					</Text>
+					<Pressable
+						accessibilityRole="button"
+						accessibilityLabel="Cerrar filtros extra"
+						onPress={onClose}
+						className="h-[42px] w-[42px] items-center justify-center border-[3px] border-base-black bg-base-white shadow-[4px_4px_1px_black]">
+						<MaterialIcons
+							name="close"
+							size={22}
+							color={colors.base.black}
+						/>
+					</Pressable>
+				</View>
+
+				<BottomSheetScrollView
+					style={{ flex: 1 }}
+					contentContainerStyle={{
+						gap: 20,
+						paddingBottom: 20,
+					}}>
+					<View className="gap-3">
+						<Text className="font-mono-bold text-base leading-5 text-base-black">
+							Empresas
+						</Text>
+						<View className="flex-row flex-wrap gap-3">
+							{brands.map((brand) => (
+								<BrandChip
+									key={brand}
+									brand={brand}
+									selected={filters.selectedBrands.includes(brand)}
+									onPress={() => onToggleBrand(brand)}
+								/>
+							))}
+						</View>
+					</View>
+
+					<View className="gap-3">
+						<Text className="font-mono-bold text-base leading-5 text-base-black">
+							Rango de precio
+						</Text>
+						<View className="flex-row gap-3">
+							<View className="min-w-0 flex-1">
+								<SheetPriceInput
+									label="Mínimo"
+									value={filters.minPrice}
+									onChangeText={onMinPriceChange}
+									placeholder="0"
+								/>
+							</View>
+							<View className="min-w-0 flex-1">
+								<SheetPriceInput
+									label="Máximo"
+									value={filters.maxPrice}
+									onChangeText={onMaxPriceChange}
+									placeholder="2000"
+								/>
+							</View>
+						</View>
+					</View>
+				</BottomSheetScrollView>
+
+				<View className="flex-row gap-3 border-t-[3px] border-base-black bg-base-white py-4">
+					<SheetButton
+						label="Limpiar"
+						icon="delete-outline"
+						variant="secondary"
+						onPress={onClear}
+					/>
+					<SheetButton
+						label="Aplicar"
+						icon="check"
+						variant="primary"
+						onPress={onApply}
+					/>
+				</View>
+			</BottomSheetView>
+		</BottomSheetModal>
+	);
+}
+
+function EasterEggModal({
+	visible,
+	onClose,
+}: {
+	visible: boolean;
+	onClose: () => void;
+}) {
+	return (
+		<Modal
+			visible={visible}
+			transparent
+			animationType="fade"
+			onRequestClose={onClose}>
+			<View className="flex-1 items-center justify-center bg-base-black/70 px-5">
+				<View className="w-full max-w-[360px] gap-4 border-[3px] border-base-black bg-base-white p-4 shadow-[4px_4px_1px_black]">
+					<View className="flex-row items-center justify-between gap-3">
+						<Text className="min-w-0 flex-1 font-mono-bold text-2xl leading-[32px] text-base-black">
+							Calma pequeñx...
+						</Text>
+						<Pressable
+							accessibilityRole="button"
+							accessibilityLabel="Cerrar easter egg"
+							onPress={onClose}
+							className="h-[42px] w-[42px] items-center justify-center border-[3px] border-base-black bg-base-white shadow-[4px_4px_1px_black]">
+							<MaterialIcons
+								name="close"
+								size={22}
+								color={colors.base.black}
+							/>
+						</Pressable>
+					</View>
+
+					<Image
+						source={require("@/assets/images/marcos_waifu2x_art_noise1_scale.png")}
+						resizeMode="cover"
+						className="h-[360px] w-full border-[3px] border-base-black bg-secondary-v3"
+					/>
+
+					<Pressable
+						accessibilityRole="button"
+						accessibilityLabel="Cerrar easter egg"
+						onPress={onClose}
+						className="h-[46px] flex-row items-center justify-center gap-2 border-[3px] border-base-black bg-primary-v1 px-[14px] py-[10px] shadow-[4px_4px_1px_black]">
+						<MaterialIcons
+							name="check"
+							size={22}
+							color={colors.base.white}
+						/>
+						<Text className="font-mono-bold text-xs leading-4 text-base-white">
+							Cerrar
+						</Text>
+					</Pressable>
+				</View>
+			</View>
+		</Modal>
+	);
+}
+
 function StatCard({ label, current, target, status }: StatSummary) {
 	return (
 		<View className="min-w-0 flex-1 gap-4 border-[3px] border-base-black bg-base-white p-3">
-			<View className="w-full flex-row items-center justify-between">
+			<View className="w-full flex-row items-center justify-between gap-2">
 				<Text
-					className={`font-mono-bold text-2xl leading-[32px] ${statusColors[status]}`}>
+					numberOfLines={1}
+					adjustsFontSizeToFit
+					className={`min-w-0 flex-1 font-mono-bold text-2xl leading-[32px] ${statusColors[status]}`}>
 					{current}
 				</Text>
 				<Text className="font-mono text-xl leading-[26px] text-secondary-v1">
@@ -179,67 +685,71 @@ function ListHeading({ title }: { title: string }) {
 	);
 }
 
-function IndicatorTriangle() {
-	return (
-		<View className="h-0 w-0 border-b-[26px] border-l-[15px] border-r-[15px] border-b-category-obligacion-v2 border-l-transparent border-r-transparent" />
-	);
-}
+function ProductListItem({ product }: { product: Producto }) {
+	const categoryLabel = CATEGORY_LABELS[product.category];
 
-function RankBadge({ rank }: { rank: 1 | 2 | 3 }) {
 	return (
-		<View className="h-[18px] w-[18px] items-center justify-center border-2 border-base-black bg-primary-v1">
-			<Text className="font-mono-bold text-[10px] leading-3 text-base-black">
-				{rank}
-			</Text>
-		</View>
-	);
-}
-
-function ProductListItem({ brand, name, price, rank }: ProductItem) {
-	return (
-		<View className="w-full min-w-[160px] flex-row items-center justify-between overflow-hidden border-b-[3px] border-l-[3px] border-base-black bg-base-white px-2 py-3 shadow-[4px_4px_1px_black]">
+		<Pressable
+			accessibilityRole="button"
+			accessibilityLabel={`${product.name}, ${product.brand}`}
+			onPress={() => {
+				router.push({
+					pathname: "/productos/[id]",
+					params: { id: product.id },
+				});
+			}}
+			className="w-full min-w-[160px] flex-row items-center justify-between overflow-hidden border-b-[3px] border-l-[3px] border-base-black bg-base-white px-2 py-3 shadow-[4px_4px_1px_black]">
 			<View className="min-w-0 flex-1 flex-row items-center gap-2">
-				{rank ? <RankBadge rank={rank} /> : null}
 				<View className="min-w-0 flex-1 gap-2">
-					<Text
-						numberOfLines={1}
-						className="font-mono text-xs leading-[15px] text-secondary-v2">
-						{brand}
-					</Text>
+					<View className="min-w-0 flex-row items-center gap-2">
+						<Text
+							numberOfLines={1}
+							className="min-w-0 shrink font-mono text-xs leading-[15px] text-secondary-v2">
+							{product.brand}
+						</Text>
+						<Text className="font-mono text-xs leading-[15px] text-secondary-v1">
+							{formatProductDate(product.date)}
+						</Text>
+					</View>
 					<View className="min-w-0 flex-row items-end gap-2">
 						<Text
 							numberOfLines={1}
 							className="shrink font-mono text-base leading-5 text-base-black">
-							{name}
+							{product.name}
 						</Text>
 						<Text
 							numberOfLines={1}
 							className="font-mono text-xs leading-[15px] text-accent2-v2">
-							{price}
+							{formatPrice(product.price)}
 						</Text>
 					</View>
+					<Text
+						numberOfLines={1}
+						className="font-mono text-xs leading-[15px] text-secondary-v2">
+						{categoryLabel}
+					</Text>
 				</View>
 			</View>
-			<IndicatorTriangle />
-		</View>
+			<CategoryIndicator category={product.category} />
+		</Pressable>
 	);
 }
 
 function ProductListSection({
 	title,
-	items,
+	products,
 }: {
 	title: string;
-	items: ProductItem[];
+	products: Producto[];
 }) {
 	return (
 		<View className="gap-[10px] px-4 py-1">
 			<ListHeading title={title} />
 			<View className="gap-[10px] px-1">
-				{items.map((item) => (
+				{products.map((product) => (
 					<ProductListItem
-						key={`${item.brand}-${item.name}`}
-						{...item}
+						key={product.id}
+						product={product}
 					/>
 				))}
 			</View>
@@ -248,47 +758,100 @@ function ProductListSection({
 }
 
 export default function ProductosScreen() {
-	const [productosData, setProductosData] = useState<ProductosData>(
-		PRODUCTOS_DATA_URL ? EMPTY_PRODUCTOS_DATA : FALLBACK_PRODUCTOS_DATA,
-	);
 	const [searchQuery, setSearchQuery] = useState("");
-	const [loadError, setLoadError] = useState<string | null>(null);
+	const [selectedFilter, setSelectedFilter] = useState<ProductFilter>("todos");
+	const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+	const [minPrice, setMinPrice] = useState("");
+	const [maxPrice, setMaxPrice] = useState("");
+	const [isEasterEggVisible, setIsEasterEggVisible] = useState(false);
+	const extraFiltersSheetRef = useRef<BottomSheetModal>(null);
+	const filterTapStreakRef = useRef(0);
 
-	useEffect(() => {
-		if (!PRODUCTOS_DATA_URL) return;
-
-		let isMounted = true;
-
-		fetchProductosData(PRODUCTOS_DATA_URL)
-			.then((data) => {
-				if (!isMounted) return;
-
-				setProductosData(data);
-				setLoadError(null);
-			})
-			.catch((error: unknown) => {
-				if (!isMounted) return;
-
-				setProductosData(FALLBACK_PRODUCTOS_DATA);
-				setLoadError(error instanceof Error ? error.message : "Error cargando productos");
-			});
-
-		return () => {
-			isMounted = false;
-		};
-	}, []);
-
-	const filteredMostExpensiveItems = useMemo(
-		() => filterItemsByQuery(productosData.mostExpensiveItems, searchQuery),
-		[productosData.mostExpensiveItems, searchQuery],
+	const extraFilters = useMemo(
+		() => ({ selectedBrands, minPrice, maxPrice }),
+		[maxPrice, minPrice, selectedBrands],
 	);
 
-	const filteredMostSoldItems = useMemo(
-		() => filterItemsByQuery(productosData.mostSoldItems, searchQuery),
-		[productosData.mostSoldItems, searchQuery],
+	const categoryFilteredProducts = useMemo(
+		() => filterProductsByCategory(demoProducts, selectedFilter),
+		[selectedFilter],
 	);
+
+	const extraFilteredProducts = useMemo(
+		() => filterProductsByExtras(categoryFilteredProducts, extraFilters),
+		[categoryFilteredProducts, extraFilters],
+	);
+
+	const searchedProducts = useMemo(
+		() => filterProductsByQuery(extraFilteredProducts, searchQuery),
+		[extraFilteredProducts, searchQuery],
+	);
+
+	const productosData = useMemo(
+		() => buildProductosData(searchedProducts),
+		[searchedProducts],
+	);
+
+	const mostExpensiveProducts = useMemo(
+		() => sortProductsByPrice(searchedProducts),
+		[searchedProducts],
+	);
+
+	const recentProducts = useMemo(
+		() => sortProductsByDate(searchedProducts),
+		[searchedProducts],
+	);
+
+	const brands = useMemo(() => getUniqueBrands(demoProducts), []);
+	const extraFiltersActive = hasExtraFilters(extraFilters);
 
 	function handleNotificationsPress() {}
+
+	function handleToggleBrand(brand: string) {
+		setSelectedBrands((currentBrands) => {
+			if (currentBrands.includes(brand)) {
+				return currentBrands.filter((currentBrand) => currentBrand !== brand);
+			}
+
+			return [...currentBrands, brand];
+		});
+	}
+
+	function handleClearExtraFilters() {
+		setSelectedBrands([]);
+		setMinPrice("");
+		setMaxPrice("");
+	}
+
+	function handleOpenExtraFilters() {
+		extraFiltersSheetRef.current?.present();
+	}
+
+	function handleCloseExtraFilters() {
+		extraFiltersSheetRef.current?.dismiss();
+	}
+
+	function handleFilterPress(filter: ProductFilter) {
+		if (filter !== selectedFilter) {
+			setSelectedFilter(filter);
+			filterTapStreakRef.current = 1;
+			return;
+		}
+
+		const nextStreak = filterTapStreakRef.current + 1;
+
+		if (nextStreak >= EASTER_EGG_TAP_TARGET) {
+			filterTapStreakRef.current = 0;
+			setIsEasterEggVisible(true);
+			return;
+		}
+
+		filterTapStreakRef.current = nextStreak;
+	}
+
+	function handleCloseEasterEgg() {
+		setIsEasterEggVisible(false);
+	}
 
 	return (
 		<SafeAreaView className="flex-1 bg-base-white">
@@ -301,8 +864,7 @@ export default function ProductosScreen() {
 				contentInsetAdjustmentBehavior="automatic">
 				<View className="gap-4 pb-5 pt-4">
 					<View className="px-3">
-						<Text
-							className="font-mono-bold text-4xl leading-[48px] text-base-black">
+						<Text className="font-mono-bold text-4xl leading-[48px] text-base-black">
 							Productos
 						</Text>
 					</View>
@@ -318,13 +880,6 @@ export default function ProductosScreen() {
 							placeholder="Buscador ...."
 						/>
 
-						{loadError ? (
-							<Text
-								className="font-mono text-xs leading-[15px] text-feedback-warning-v1">
-								Usando datos locales
-							</Text>
-						) : null}
-
 						<ScrollView
 							horizontal
 							showsHorizontalScrollIndicator={false}>
@@ -332,9 +887,15 @@ export default function ProductosScreen() {
 								{productosData.filters.map((filter) => (
 									<FilterButton
 										key={filter}
-										label={filter}
+										filter={filter}
+										active={selectedFilter === filter}
+										onPress={() => handleFilterPress(filter)}
 									/>
 								))}
+								<ExtraFiltersButton
+									active={extraFiltersActive}
+									onPress={handleOpenExtraFilters}
+								/>
 							</View>
 						</ScrollView>
 
@@ -349,14 +910,31 @@ export default function ProductosScreen() {
 
 					<ProductListSection
 						title="Lo más caro"
-						items={filteredMostExpensiveItems}
+						products={mostExpensiveProducts}
 					/>
 					<ProductListSection
-						title="Lo + vendido"
-						items={filteredMostSoldItems}
+						title="Productos"
+						products={recentProducts}
 					/>
 				</View>
 			</ScrollView>
+
+			<ExtraFiltersSheet
+				brands={brands}
+				bottomSheetModalRef={extraFiltersSheetRef}
+				filters={extraFilters}
+				onApply={handleCloseExtraFilters}
+				onClose={handleCloseExtraFilters}
+				onClear={handleClearExtraFilters}
+				onMaxPriceChange={setMaxPrice}
+				onMinPriceChange={setMinPrice}
+				onToggleBrand={handleToggleBrand}
+			/>
+
+			<EasterEggModal
+				visible={isEasterEggVisible}
+				onClose={handleCloseEasterEgg}
+			/>
 		</SafeAreaView>
 	);
 }

@@ -4,10 +4,12 @@ import {
 	RedHatMono_700Bold,
 	useFonts,
 } from "@expo-google-fonts/red-hat-mono";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect } from "react";
 import { View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { I18nProvider } from "@/lib/i18n";
 
@@ -29,13 +31,18 @@ export default function RootLayout() {
 	if (!fontsLoaded) return <View />;
 
 	return (
-		<I18nProvider>
-			<Stack screenOptions={{ headerShown: false }}>
-				<Stack.Screen name="index" />
-				<Stack.Screen name="login" />
-				<Stack.Screen name="(tabs)" />
-				<Stack.Screen name="config" />
-			</Stack>
-		</I18nProvider>
+		<GestureHandlerRootView style={{ flex: 1 }}>
+			<BottomSheetModalProvider>
+				<I18nProvider>
+					<Stack screenOptions={{ headerShown: false }}>
+						<Stack.Screen name="index" />
+						<Stack.Screen name="login" />
+						<Stack.Screen name="(tabs)" />
+						<Stack.Screen name="config" />
+						<Stack.Screen name="productos/[id]" />
+					</Stack>
+				</I18nProvider>
+			</BottomSheetModalProvider>
+		</GestureHandlerRootView>
 	);
 }
