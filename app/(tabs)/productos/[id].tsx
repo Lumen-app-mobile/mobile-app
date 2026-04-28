@@ -1,15 +1,15 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
-import { ScrollView, Text, Pressable, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { demoProducts } from "@/assets/data/productData";
 import AhorroIndicator from "@/assets/images/Property 1=ahorro.svg";
 import ObligacionIndicator from "@/assets/images/Property 1=obligacion.svg";
 import OcioIndicator from "@/assets/images/Property 1=ocio.svg";
+import { demoProducts } from "@/assets/data/productData";
 import Header from "@/components/layout/Header/Header";
 import colors from "@/constants/colors";
-import { ProductCategory, Producto } from "@/models/product";
+import { ProductCategory, Producto } from "@/domain/product/product.types";
 
 const CATEGORY_LABELS: Record<ProductCategory, string> = {
 	obligacion: "Obligación",

@@ -1,6 +1,6 @@
-import { useState } from "react";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Link, type Href } from "expo-router";
+import { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -150,7 +150,9 @@ function PermissionToggle({
 
 export default function ConfigScreen() {
 	const { t } = useI18n();
-	const [permissions, setPermissions] = useState<Record<PermissionItem["key"], boolean>>({
+	const [permissions, setPermissions] = useState<
+		Record<PermissionItem["key"], boolean>
+	>({
 		camera: false,
 		location: false,
 		storage: false,

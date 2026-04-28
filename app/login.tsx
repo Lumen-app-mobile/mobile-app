@@ -11,11 +11,12 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { auth } from "@/services/firebase";
 import TextField from "@/components/ui/FormInput/FormInput";
 import colors from "@/constants/colors";
-import { auth } from "@/services/firebase";
-import Logo from "../assets/images/logo.svg";
-const backgroundImage = require("../assets/images/Gemini_Generated_Image_9vrbv69vrbv69vrb.webp");
+import Logo from "@/assets/images/logo.svg";
+
+const backgroundImage = require("@/assets/images/Gemini_Generated_Image_9vrbv69vrbv69vrb.webp");
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 

@@ -15,20 +15,23 @@ app/
   _layout.tsx
   index.tsx
   login.tsx
-  config/
-    _layout.tsx
-    categorias.tsx
-    datos.tsx
-    informacion.tsx
-    notificaciones.tsx
-    perfil.tsx
-    preferencias.tsx
   (tabs)/
     _layout.tsx
     index.tsx
-    productos.tsx
+    config/
+      _layout.tsx
+      index.tsx
+      categorias.tsx
+      datos.tsx
+      informacion.tsx
+      notificaciones.tsx
+      perfil.tsx
+      preferencias.tsx
+    productos/
+      _layout.tsx
+      index.tsx
+      [id].tsx
     scan.tsx
-    config.tsx
 
 components/
   layout/
@@ -61,18 +64,20 @@ Ejemplos:
 - `app/_layout.tsx`: layout raiz de la app.
 - `app/index.tsx`: entrada inicial.
 - `app/login.tsx`: pantalla de login.
-- `app/config/_layout.tsx`: stack interno de subpantallas de configuracion.
-- `app/config/perfil.tsx`: subpantalla de configuracion de perfil.
-- `app/config/preferencias.tsx`: subpantalla de preferencias.
-- `app/config/notificaciones.tsx`: subpantalla de notificaciones.
-- `app/config/categorias.tsx`: subpantalla de categorias.
-- `app/config/datos.tsx`: subpantalla de datos.
-- `app/config/informacion.tsx`: subpantalla de informacion.
 - `app/(tabs)/_layout.tsx`: configuracion de tabs.
 - `app/(tabs)/index.tsx`: pantalla Home.
-- `app/(tabs)/productos.tsx`: pantalla Productos.
+- `app/(tabs)/config/index.tsx`: pantalla principal del tab Config.
+- `app/(tabs)/config/_layout.tsx`: stack interno de subpantallas de configuracion dentro del tab.
+- `app/(tabs)/config/perfil.tsx`: subpantalla de configuracion de perfil.
+- `app/(tabs)/config/preferencias.tsx`: subpantalla de preferencias.
+- `app/(tabs)/config/notificaciones.tsx`: subpantalla de notificaciones.
+- `app/(tabs)/config/categorias.tsx`: subpantalla de categorias.
+- `app/(tabs)/config/datos.tsx`: subpantalla de datos.
+- `app/(tabs)/config/informacion.tsx`: subpantalla de informacion.
+- `app/(tabs)/productos/index.tsx`: pantalla principal del tab Productos.
+- `app/(tabs)/productos/_layout.tsx`: stack interno de Productos dentro del tab.
+- `app/(tabs)/productos/[id].tsx`: detalle de producto comprado.
 - `app/(tabs)/scan.tsx`: pantalla Scan.
-- `app/(tabs)/config.tsx`: pantalla Config.
 
 Reglas:
 
@@ -324,7 +329,7 @@ Al crear una pantalla nueva hay que definir:
 Ejemplo:
 
 ```bash
-app/(tabs)/productos.tsx
+app/(tabs)/productos/index.tsx
 ```
 
 Debe contener solo la composicion de pantalla. Si aparece logica reutilizable, moverla a componentes, hooks o servicios.

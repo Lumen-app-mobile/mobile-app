@@ -104,7 +104,11 @@ export default function TextField({
 				}}>
 				{/* El icono solo aparece en el estado pensado para inputs con apoyo visual. */}
 				{showIcon ? (
-					<View style={{ width: currentSize.iconSize, height: currentSize.iconSize }}>
+					<View
+						style={{
+							width: currentSize.iconSize,
+							height: currentSize.iconSize,
+						}}>
 						{icon}
 					</View>
 				) : null}

@@ -1,7 +1,7 @@
 import colors from "@/constants/colors";
 import { Pressable, View } from "react-native";
 import { SvgXml } from "react-native-svg";
-import Logo from "../../../assets/images/logo.svg";
+import Logo from "@/assets/images/logo.svg";
 
 type HeaderProps = {
 	onNotificationsPress?: () => void;

@@ -35,7 +35,7 @@ import TitleDecorator from "@/assets/images/Vector(1).svg";
 import Header from "@/components/layout/Header/Header";
 import TextField from "@/components/ui/FormInput/FormInput";
 import colors from "@/constants/colors";
-import { ProductCategory, Producto } from "@/models/product";
+import { ProductCategory, Producto } from "@/domain/product/product.types";
 
 type StatStatus = "success" | "warning" | "danger";
 

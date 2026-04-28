@@ -1,6 +1,6 @@
-import { useState } from "react";
 import { MaterialIcons } from "@expo/vector-icons";
-import { Link, Stack, router } from "expo-router";
+import { Stack, router } from "expo-router";
+import { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -29,13 +29,6 @@ type ProfileDraft = {
 	repeatedPassword: string;
 };
 
-type ConfigTab = {
-	href: "/(tabs)" | "/(tabs)/productos" | "/(tabs)/scan" | "/(tabs)/config";
-	icon: keyof typeof MaterialIcons.glyphMap;
-	labelKey: TranslationKey;
-	isActive?: boolean;
-};
-
 const CURRENT_PROFILE: ProfileData = {
 	email: "usuario@lumen.app",
 	name: "Usuario Lumen",
@@ -45,20 +38,18 @@ const CURRENT_PROFILE: ProfileData = {
 const PROFILE_FIELDS: ProfileField[] = [
 	{ key: "name", labelKey: "profile.name", placeholder: "placeholder" },
 	{ key: "email", labelKey: "profile.email", placeholder: "placeholder" },
-	{ key: "password", labelKey: "profile.password", placeholder: "placeholder", secureTextEntry: true },
+	{
+		key: "password",
+		labelKey: "profile.password",
+		placeholder: "placeholder",
+		secureTextEntry: true,
+	},
 	{
 		key: "repeatedPassword",
 		labelKey: "profile.repeatPassword",
 		placeholder: "placeholder",
 		secureTextEntry: true,
 	},
-];
-
-const CONFIG_TABS: ConfigTab[] = [
-	{ href: "/(tabs)", icon: "home", labelKey: "tabs.home" },
-	{ href: "/(tabs)/productos", icon: "list-alt", labelKey: "tabs.products" },
-	{ href: "/(tabs)/scan", icon: "qr-code", labelKey: "tabs.scan" },
-	{ href: "/(tabs)/config", icon: "settings", labelKey: "tabs.config", isActive: true },
 ];
 
 function IconButton({
@@ -149,62 +140,6 @@ function ProfileFieldInput({
 	);
 }
 
-function ConfigBottomNavigation() {
-	const { t } = useI18n();
-
-	return (
-		<View className="bg-base-white px-[10px] pb-[26px]">
-			<View className="w-full max-w-[448px] flex-row self-center border-[3px] border-base-black bg-base-white p-[3px] shadow-[4px_4px_1px_black]">
-				{CONFIG_TABS.map((tab) => {
-					const label = t(tab.labelKey);
-					const content = (
-						<View
-							className={`min-w-0 flex-1 items-center justify-center gap-1 p-3 ${
-								tab.isActive
-									? "border-[3px] border-primary-v1 bg-primary-v1"
-									: "border-[3px] border-primary-v1 bg-base-white"
-							}`}>
-							<MaterialIcons
-								name={tab.icon}
-								size={24}
-								color={tab.isActive ? colors.base.white : colors.primary.v1}
-							/>
-							<Text
-								numberOfLines={1}
-								adjustsFontSizeToFit
-								className={`font-mono-bold text-xs uppercase leading-[15px] ${
-									tab.isActive ? "text-base-white" : "text-primary-v1"
-								}`}>
-								{label}
-							</Text>
-						</View>
-					);
-
-					if (tab.isActive) {
-						return (
-							<Pressable
-								key={tab.labelKey}
-								disabled
-								className="min-w-0 flex-1">
-								{content}
-							</Pressable>
-						);
-					}
-
-					return (
-						<Link
-							key={tab.labelKey}
-							href={tab.href}
-							asChild>
-							<Pressable className="min-w-0 flex-1">{content}</Pressable>
-						</Link>
-					);
-				})}
-			</View>
-		</View>
-	);
-}
-
 export default function PerfilConfigScreen() {
 	const { t } = useI18n();
 	const [profile, setProfile] = useState<ProfileData>(CURRENT_PROFILE);
@@ -291,8 +226,6 @@ export default function PerfilConfigScreen() {
 					</View>
 				</View>
 			</ScrollView>
-
-			<ConfigBottomNavigation />
 		</SafeAreaView>
 	);
 }

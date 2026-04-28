@@ -1,9 +1,9 @@
 import { Pressable, Text, View } from "react-native";
 
+import AhorroIndicator from "@/assets/images/Property 1=ahorro.svg";
+import ObligacionIndicator from "@/assets/images/Property 1=obligacion.svg";
+import OcioIndicator from "@/assets/images/Property 1=ocio.svg";
 import colors from "@/constants/colors";
-import AhorroIndicator from "../../../assets/images/Property 1=ahorro.svg";
-import ObligacionIndicator from "../../../assets/images/Property 1=obligacion.svg";
-import OcioIndicator from "../../../assets/images/Property 1=ocio.svg";
 
 type ItemListaVariant = "default" | "listHeader";
 type ItemListaCategory = "obligacion" | "ahorro" | "ocio";
@@ -106,7 +106,12 @@ export default function ItemLista({
 					? { justifyContent: "space-between" }
 					: { justifyContent: "flex-start", gap: CONTENT_GAP },
 			]}>
-			<View style={{ flexDirection: "row", alignItems: "center", gap: CONTENT_GAP }}>
+			<View
+				style={{
+					flexDirection: "row",
+					alignItems: "center",
+					gap: CONTENT_GAP,
+				}}>
 				<View style={{ alignItems: "flex-start", gap: CONTENT_GAP }}>
 					{isDefault ? (
 						<Text

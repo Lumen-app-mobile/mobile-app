@@ -38,8 +38,6 @@ export default function RootLayout() {
 						<Stack.Screen name="index" />
 						<Stack.Screen name="login" />
 						<Stack.Screen name="(tabs)" />
-						<Stack.Screen name="config" />
-						<Stack.Screen name="productos/[id]" />
 					</Stack>
 				</I18nProvider>
 			</BottomSheetModalProvider>

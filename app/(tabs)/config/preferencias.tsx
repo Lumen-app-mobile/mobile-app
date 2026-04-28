@@ -1,19 +1,16 @@
-import { useState } from "react";
 import { MaterialIcons } from "@expo/vector-icons";
-import { Link, Stack, router } from "expo-router";
+import { Stack, router } from "expo-router";
+import { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import Header from "@/components/layout/Header/Header";
 import colors from "@/constants/colors";
-import { type AppLanguage, LANGUAGE_OPTIONS, type TranslationKey, useI18n } from "@/lib/i18n";
-
-type ConfigTab = {
-	href: "/(tabs)" | "/(tabs)/productos" | "/(tabs)/scan" | "/(tabs)/config";
-	icon: keyof typeof MaterialIcons.glyphMap;
-	labelKey: TranslationKey;
-	isActive?: boolean;
-};
+import {
+	type AppLanguage,
+	LANGUAGE_OPTIONS,
+	useI18n,
+} from "@/lib/i18n";
 
 type DropdownOption = {
 	label: string;
@@ -21,13 +18,6 @@ type DropdownOption = {
 };
 
 type OpenDropdown = "language" | "currency" | null;
-
-const CONFIG_TABS: ConfigTab[] = [
-	{ href: "/(tabs)", icon: "home", labelKey: "tabs.home" },
-	{ href: "/(tabs)/productos", icon: "list-alt", labelKey: "tabs.products" },
-	{ href: "/(tabs)/scan", icon: "qr-code", labelKey: "tabs.scan" },
-	{ href: "/(tabs)/config", icon: "settings", labelKey: "tabs.config", isActive: true },
-];
 
 const CURRENCY_OPTIONS: DropdownOption[] = [
 	{ label: "Euro (EUR)", value: "eur" },
@@ -179,62 +169,6 @@ function PreferenceDropdown({
 	);
 }
 
-function ConfigBottomNavigation() {
-	const { t } = useI18n();
-
-	return (
-		<View className="bg-base-white px-[10px] pb-[26px]">
-			<View className="w-full max-w-[448px] flex-row self-center border-[3px] border-base-black bg-base-white p-[3px] shadow-[4px_4px_1px_black]">
-				{CONFIG_TABS.map((tab) => {
-					const label = t(tab.labelKey);
-					const content = (
-						<View
-							className={`min-w-0 flex-1 items-center justify-center gap-1 p-3 ${
-								tab.isActive
-									? "border-[3px] border-primary-v1 bg-primary-v1"
-									: "border-[3px] border-primary-v1 bg-base-white"
-							}`}>
-							<MaterialIcons
-								name={tab.icon}
-								size={24}
-								color={tab.isActive ? colors.base.white : colors.primary.v1}
-							/>
-							<Text
-								numberOfLines={1}
-								adjustsFontSizeToFit
-								className={`font-mono-bold text-xs uppercase leading-[15px] ${
-									tab.isActive ? "text-base-white" : "text-primary-v1"
-								}`}>
-								{label}
-							</Text>
-						</View>
-					);
-
-					if (tab.isActive) {
-						return (
-							<Pressable
-								key={tab.labelKey}
-								disabled
-								className="min-w-0 flex-1">
-								{content}
-							</Pressable>
-						);
-					}
-
-					return (
-						<Link
-							key={tab.labelKey}
-							href={tab.href}
-							asChild>
-							<Pressable className="min-w-0 flex-1">{content}</Pressable>
-						</Link>
-					);
-				})}
-			</View>
-		</View>
-	);
-}
-
 export default function PreferenciasConfigScreen() {
 	const { language, setLanguage, t } = useI18n();
 	const [isDarkTheme, setIsDarkTheme] = useState(false);
@@ -242,12 +176,15 @@ export default function PreferenciasConfigScreen() {
 	const [openDropdown, setOpenDropdown] = useState<OpenDropdown>(null);
 
 	const selectedLanguage =
-		LANGUAGE_OPTIONS.find((option) => option.value === language) ?? LANGUAGE_OPTIONS[0];
+		LANGUAGE_OPTIONS.find((option) => option.value === language) ??
+		LANGUAGE_OPTIONS[0];
 
 	function handleNotificationsPress() {}
 
 	function toggleDropdown(dropdown: Exclude<OpenDropdown, null>) {
-		setOpenDropdown((currentDropdown) => (currentDropdown === dropdown ? null : dropdown));
+		setOpenDropdown((currentDropdown) =>
+			currentDropdown === dropdown ? null : dropdown,
+		);
 	}
 
 	function selectLanguage(option: DropdownOption) {
@@ -309,8 +246,6 @@ export default function PreferenciasConfigScreen() {
 					</View>
 				</View>
 			</ScrollView>
-
-			<ConfigBottomNavigation />
 		</SafeAreaView>
 	);
 }
