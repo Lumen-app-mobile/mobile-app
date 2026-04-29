@@ -67,7 +67,6 @@ export default function ItemLista({
 		minWidth: ITEM_MIN_WIDTH,
 		flexDirection: "row" as const,
 		alignItems: "center" as const,
-		overflow: "hidden" as const,
 		paddingHorizontal: PADDING_X,
 		paddingVertical: PADDING_Y,
 		backgroundColor: isDefault ? colors.base.white : colors.primary.v1,

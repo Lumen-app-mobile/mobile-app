@@ -59,6 +59,14 @@ const PERMISSION_ITEMS: PermissionItem[] = [
 	{ key: "location", labelKey: "permissions.location" },
 ];
 
+const LIST_ITEM_SHADOW_STYLE = {
+	shadowColor: colors.base.black,
+	shadowOffset: { width: 4, height: 4 },
+	shadowOpacity: 1,
+	shadowRadius: 1,
+	elevation: 5,
+};
+
 function SectionHeading({ title }: { title: string }) {
 	return (
 		<View className="w-full flex-row items-center gap-2 bg-primary-v1 px-4 py-2">
@@ -90,7 +98,8 @@ function ConfigListItem({
 			<Pressable
 				accessibilityRole="link"
 				accessibilityLabel={label}
-				className="w-full min-w-[160px] flex-row items-center gap-2 overflow-hidden border-b-[3px] border-l-[3px] border-base-black bg-base-white px-2 py-3 shadow-[4px_4px_1px_black]">
+				className="w-full min-w-[160px] flex-row items-center gap-2 border-b-[3px] border-l-[3px] border-base-black bg-base-white px-2 py-3"
+				style={LIST_ITEM_SHADOW_STYLE}>
 				<MaterialIcons
 					name={icon}
 					size={24}
@@ -185,7 +194,7 @@ export default function ConfigScreen() {
 
 					<View className="gap-[10px] px-4">
 						<SectionHeading title={t("config.system")} />
-						<View className="w-[263px] gap-4">
+						<View className="w-[267px] gap-4 pb-1 pr-1">
 							{SYSTEM_ITEMS.map((item) => (
 								<ConfigListItem
 									key={item.labelKey}

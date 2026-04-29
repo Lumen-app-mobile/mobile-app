@@ -89,6 +89,14 @@ const dateFormatter = new Intl.DateTimeFormat("es-ES", {
 	year: "numeric",
 });
 
+const LIST_ITEM_SHADOW_STYLE = {
+	shadowColor: colors.base.black,
+	shadowOffset: { width: 4, height: 4 },
+	shadowOpacity: 1,
+	shadowRadius: 1,
+	elevation: 5,
+};
+
 const statusColors = {
 	success: "text-feedback-success-v1",
 	warning: "text-feedback-warning-v1",
@@ -698,7 +706,8 @@ function ProductListItem({ product }: { product: Producto }) {
 					params: { id: product.id },
 				});
 			}}
-			className="w-full min-w-[160px] flex-row items-center justify-between overflow-hidden border-b-[3px] border-l-[3px] border-base-black bg-base-white px-2 py-3 shadow-[4px_4px_1px_black]">
+			className="w-full min-w-[160px] flex-row items-center justify-between border-b-[3px] border-l-[3px] border-base-black bg-base-white px-2 py-3"
+			style={LIST_ITEM_SHADOW_STYLE}>
 			<View className="min-w-0 flex-1 flex-row items-center gap-2">
 				<View className="min-w-0 flex-1 gap-2">
 					<View className="min-w-0 flex-row items-center gap-2">
@@ -743,9 +752,9 @@ function ProductListSection({
 	products: Producto[];
 }) {
 	return (
-		<View className="gap-[10px] px-4 py-1">
+		<View className="gap-[10px] px-4 pb-2 pt-1">
 			<ListHeading title={title} />
-			<View className="gap-[10px] px-1">
+			<View className="gap-[10px] px-1 pb-1 pr-2">
 				{products.map((product) => (
 					<ProductListItem
 						key={product.id}

@@ -1,0 +1,201 @@
+import {
+	Factura,
+	FacturaNotification,
+} from "@/domain/factura/factura.types";
+
+export const demoFacturas: Factura[] = [
+	{
+		id: "factura-mercadona-2026-04-27",
+		displayName: "Mercadona - 27 abril",
+		status: "pending_review",
+		createdAt: "2026-04-27T11:24:00.000Z",
+		fields: [
+			{
+				key: "market",
+				label: "Mercado",
+				value: "Mercadona",
+				confidence: 0.96,
+				required: true,
+				status: "complete",
+			},
+			{
+				key: "date",
+				label: "Fecha",
+				value: "2026-04-27",
+				confidence: 0.92,
+				required: true,
+				status: "complete",
+			},
+			{
+				key: "total",
+				label: "Total",
+				value: "34.56",
+				confidence: 0.88,
+				required: true,
+				status: "low_confidence",
+			},
+		],
+		products: [
+			{
+				id: "factura-product-pollo",
+				name: "Pollo 250gr",
+				category: "obligacion",
+				amount: 4.56,
+				market: "Mercadona",
+				date: "2026-04-27",
+				source: "ocr",
+			},
+		],
+	},
+	{
+		id: "factura-logitech-2026-04-24",
+		displayName: "Logitech - 24 abril",
+		status: "validated",
+		createdAt: "2026-04-24T18:05:00.000Z",
+		fields: [
+			{
+				key: "market",
+				label: "Mercado",
+				value: "Logitech",
+				confidence: 0.98,
+				required: true,
+				status: "complete",
+			},
+			{
+				key: "total",
+				label: "Total",
+				value: "84.00",
+				confidence: 0.97,
+				required: true,
+				status: "complete",
+			},
+		],
+		products: [
+			{
+				id: "factura-product-raton",
+				name: "Ratón Logitech",
+				category: "ocio",
+				amount: 84,
+				market: "Logitech",
+				date: "2026-04-24",
+				source: "ocr",
+			},
+		],
+	},
+	{
+		id: "factura-apple-2026-04-19",
+		displayName: "Apple Inc - 19 abril",
+		status: "pending_review",
+		createdAt: "2026-04-19T09:42:00.000Z",
+		fields: [
+			{
+				key: "market",
+				label: "Mercado",
+				value: "Apple Inc",
+				confidence: 0.94,
+				required: true,
+				status: "complete",
+			},
+			{
+				key: "total",
+				label: "Total",
+				value: "1900.00",
+				confidence: 0.91,
+				required: true,
+				status: "complete",
+			},
+		],
+		products: [
+			{
+				id: "factura-product-macbook",
+				name: "Macbook pro M5",
+				category: "obligacion",
+				amount: 1900,
+				market: "Apple Inc",
+				date: "2026-04-19",
+				source: "ocr",
+			},
+		],
+	},
+	{
+		id: "factura-my-investor-2026-04-09",
+		displayName: "My investor - 9 abril",
+		status: "not_complete",
+		createdAt: "2026-04-09T14:10:00.000Z",
+		fields: [
+			{
+				key: "market",
+				label: "Mercado",
+				value: "My investor",
+				confidence: 0.9,
+				required: true,
+				status: "complete",
+			},
+			{
+				key: "product",
+				label: "Producto",
+				value: "",
+				confidence: 0.24,
+				required: true,
+				status: "missing",
+			},
+		],
+		products: [],
+		errorCode: "OCR_PRODUCT_MISSING",
+		errorMessage: "No se pudo leer el producto principal.",
+	},
+	{
+		id: "factura-mercadona-2026-04-02",
+		displayName: "Mercadona - 2 abril",
+		status: "pending_review",
+		createdAt: "2026-04-02T16:35:00.000Z",
+		fields: [
+			{
+				key: "market",
+				label: "Mercado",
+				value: "Mercadona",
+				confidence: 0.97,
+				required: true,
+				status: "complete",
+			},
+			{
+				key: "total",
+				label: "Total",
+				value: "6.00",
+				confidence: 0.95,
+				required: true,
+				status: "complete",
+			},
+		],
+		products: [
+			{
+				id: "factura-product-huevos",
+				name: "12 huevos frescos",
+				category: "obligacion",
+				amount: 6,
+				market: "Mercadona",
+				date: "2026-04-02",
+				source: "ocr",
+			},
+		],
+	},
+];
+
+export const demoFacturaNotifications: FacturaNotification[] = [
+	{
+		id: "notification-factura-mercadona",
+		facturaId: "factura-mercadona-2026-04-27",
+		title: "Factura lista para revisar",
+		detail: "Mercadona - 27 abril",
+		createdAt: "2026-04-27T11:25:00.000Z",
+		read: false,
+	},
+	{
+		id: "notification-factura-my-investor",
+		facturaId: "factura-my-investor-2026-04-09",
+		title: "Factura incompleta",
+		detail: "Falta introducir un producto",
+		createdAt: "2026-04-09T14:11:00.000Z",
+		read: false,
+	},
+];

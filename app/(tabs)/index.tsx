@@ -1,4 +1,5 @@
 import { MaterialIcons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -196,6 +197,9 @@ function AnalysisCard() {
 
 			<View style={{ alignItems: "flex-end", paddingTop: 32 }}>
 				<Pressable
+					onPress={() => router.push("/stats")}
+					accessibilityRole="button"
+					accessibilityLabel="Ver stats"
 					style={{
 						backgroundColor: colors.secondary.v1,
 						borderWidth: 3,
