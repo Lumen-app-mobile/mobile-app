@@ -9,9 +9,13 @@ import OcioIndicator from "@/assets/images/Property 1=ocio.svg";
 import { demoProducts } from "@/assets/data/productData";
 import Header from "@/components/layout/Header/Header";
 import colors from "@/constants/colors";
+import {
+	BaseProductCategory,
+	isBaseProductCategory,
+} from "@/domain/category/category.types";
 import { ProductCategory, Producto } from "@/domain/product/product.types";
 
-const CATEGORY_LABELS: Record<ProductCategory, string> = {
+const CATEGORY_LABELS: Record<BaseProductCategory, string> = {
 	obligacion: "Obligación",
 	ahorro: "Ahorro",
 	ocio: "Ocio",
@@ -42,7 +46,21 @@ function formatProductDate(date: Producto["date"]) {
 	return dateFormatter.format(new Date(`${date}T00:00:00`));
 }
 
+function getProductCategoryLabel(category: ProductCategory) {
+	return isBaseProductCategory(category) ? CATEGORY_LABELS[category] : category;
+}
+
 function CategoryIndicator({ category }: { category: ProductCategory }) {
+	if (!isBaseProductCategory(category)) {
+		return (
+			<MaterialIcons
+				name="category"
+				size={76}
+				color={colors.base.black}
+			/>
+		);
+	}
+
 	const Indicator = indicatorByCategory[category];
 
 	return (
@@ -153,7 +171,7 @@ export default function ProductDetailScreen() {
 						<View className="gap-4">
 							<DetailRow
 								label="Categoría"
-								value={CATEGORY_LABELS[product.category]}
+								value={getProductCategoryLabel(product.category)}
 							/>
 							<DetailRow
 								label="Fecha"

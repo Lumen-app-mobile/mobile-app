@@ -35,6 +35,10 @@ import TitleDecorator from "@/assets/images/Vector(1).svg";
 import Header from "@/components/layout/Header/Header";
 import TextField from "@/components/ui/FormInput/FormInput";
 import colors from "@/constants/colors";
+import {
+	BaseProductCategory,
+	isBaseProductCategory,
+} from "@/domain/category/category.types";
 import { ProductCategory, Producto } from "@/domain/product/product.types";
 
 type StatStatus = "success" | "warning" | "danger";
@@ -51,14 +55,14 @@ type ProductosData = {
 	stats: [StatSummary, StatSummary, StatSummary];
 };
 
-type ProductFilter = "todos" | ProductCategory;
+type ProductFilter = "todos" | BaseProductCategory;
 type ExtraFilters = {
 	selectedBrands: string[];
 	minPrice: string;
 	maxPrice: string;
 };
 
-const CATEGORY_LABELS: Record<ProductCategory, string> = {
+const CATEGORY_LABELS: Record<BaseProductCategory, string> = {
 	obligacion: "Obligaciones",
 	ahorro: "Ahorros",
 	ocio: "Ocio",
@@ -119,6 +123,10 @@ function formatPrice(price: Producto["price"]) {
 
 function formatProductDate(date: Producto["date"]) {
 	return dateFormatter.format(new Date(`${date}T00:00:00`));
+}
+
+function getProductCategoryLabel(category: ProductCategory) {
+	return isBaseProductCategory(category) ? CATEGORY_LABELS[category] : category;
 }
 
 function sortProductsByDate(products: Producto[]) {
@@ -219,7 +227,7 @@ function filterProductsByQuery(products: Producto[], query: string) {
 			product.name,
 			formatPrice(product.price),
 			product.category,
-			CATEGORY_LABELS[product.category],
+			getProductCategoryLabel(product.category),
 			formatProductDate(product.date),
 		]
 			.join(" ")
@@ -251,6 +259,16 @@ function SearchIcon() {
 }
 
 function CategoryIndicator({ category }: { category: ProductCategory }) {
+	if (!isBaseProductCategory(category)) {
+		return (
+			<MaterialIcons
+				name="category"
+				size={30}
+				color={colors.base.black}
+			/>
+		);
+	}
+
 	const Indicator = indicatorByCategory[category];
 
 	return (
@@ -694,7 +712,7 @@ function ListHeading({ title }: { title: string }) {
 }
 
 function ProductListItem({ product }: { product: Producto }) {
-	const categoryLabel = CATEGORY_LABELS[product.category];
+	const categoryLabel = getProductCategoryLabel(product.category);
 
 	return (
 		<Pressable

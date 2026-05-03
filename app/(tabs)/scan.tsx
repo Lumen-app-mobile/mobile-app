@@ -6,7 +6,7 @@ import {
 	BottomSheetView,
 	type BottomSheetBackdropProps,
 } from "@gorhom/bottom-sheet";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import {
 	useCallback,
 	useEffect,
@@ -21,19 +21,19 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "@/components/layout/Header/Header";
 import TextField from "@/components/ui/FormInput/FormInput";
 import colors from "@/constants/colors";
-import { ProductCategory } from "@/domain/product/product.types";
+import {
+	BASE_PRODUCT_CATEGORIES,
+	DEFAULT_PRODUCT_CATEGORY,
+	ProductCategory,
+	ProductCategoryOption,
+} from "@/domain/category/category.types";
 import { Factura, FacturaUploadStatus } from "@/domain/factura/factura.types";
 import {
 	agregarProductoManualAFactura,
 	listarFacturas,
 	subirFacturaMock,
 } from "@/services/facturas";
-
-const CATEGORY_OPTIONS: { label: string; value: ProductCategory }[] = [
-	{ label: "Obligación", value: "obligacion" },
-	{ label: "Ahorro", value: "ahorro" },
-	{ label: "Ocio", value: "ocio" },
-];
+import { listarCategorias } from "@/services/categories";
 
 type ScanTab = "photo" | "manual";
 
@@ -324,6 +324,7 @@ function FacturaPreviewModal({
 
 function ManualEntryPanel({
 	selectedFactura,
+	categories,
 	name,
 	category,
 	amount,
@@ -336,6 +337,7 @@ function ManualEntryPanel({
 	onManualSubmit,
 }: {
 	selectedFactura: Factura | null;
+	categories: ProductCategoryOption[];
 	name: string;
 	category: ProductCategory;
 	amount: string;
@@ -407,6 +409,7 @@ function ManualEntryPanel({
 			</View>
 
 			<CategorySelect
+				categories={categories}
 				value={category}
 				onChange={onCategoryChange}
 			/>
@@ -435,9 +438,11 @@ function ManualEntryPanel({
 }
 
 function CategorySelect({
+	categories,
 	value,
 	onChange,
 }: {
+	categories: ProductCategoryOption[];
 	value: ProductCategory;
 	onChange: (value: ProductCategory) => void;
 }) {
@@ -446,17 +451,17 @@ function CategorySelect({
 			<Text className="font-mono text-base leading-5 text-base-black">
 				Categoria
 			</Text>
-			<View className="flex-row gap-2">
-				{CATEGORY_OPTIONS.map((option) => {
-					const active = option.value === value;
+			<View className="flex-row flex-wrap gap-2">
+				{categories.map((option) => {
+					const active = option.id === value;
 
 					return (
 						<Pressable
-							key={option.value}
+							key={option.id}
 							accessibilityRole="button"
 							accessibilityState={{ selected: active }}
-							onPress={() => onChange(option.value)}
-							className={`min-h-[42px] flex-1 items-center justify-center border-[4px] border-base-black px-2 py-2 ${
+							onPress={() => onChange(option.id)}
+							className={`min-h-[42px] min-w-[96px] flex-1 items-center justify-center border-[4px] border-base-black px-2 py-2 ${
 								active ? "bg-primary-v1" : "bg-base-white"
 							}`}>
 							<Text
@@ -642,8 +647,13 @@ export default function ScanScreen() {
 	const [statusError, setStatusError] = useState<string | undefined>();
 	const [facturas, setFacturas] = useState<Factura[]>([]);
 	const [selectedFactura, setSelectedFactura] = useState<Factura | null>(null);
+	const [categories, setCategories] = useState<ProductCategoryOption[]>(
+		BASE_PRODUCT_CATEGORIES,
+	);
 	const [name, setName] = useState("");
-	const [category, setCategory] = useState<ProductCategory>("obligacion");
+	const [category, setCategory] = useState<ProductCategory>(
+		DEFAULT_PRODUCT_CATEGORY,
+	);
 	const [amount, setAmount] = useState("");
 	const [market, setMarket] = useState("");
 	const [isPreviewVisible, setIsPreviewVisible] = useState(false);
@@ -656,6 +666,33 @@ export default function ScanScreen() {
 			setSelectedFactura((currentFactura) => currentFactura ?? nextFacturas[0] ?? null);
 		});
 	}, []);
+
+	useFocusEffect(
+		useCallback(() => {
+			let isActive = true;
+
+			listarCategorias().then((nextCategories) => {
+				if (!isActive) return;
+
+				setCategories(nextCategories);
+				setCategory((currentCategory) => {
+					if (
+						nextCategories.some(
+							(nextCategory) => nextCategory.id === currentCategory,
+						)
+					) {
+						return currentCategory;
+					}
+
+					return DEFAULT_PRODUCT_CATEGORY;
+				});
+			});
+
+			return () => {
+				isActive = false;
+			};
+		}, []),
+	);
 
 	function handleOpenManualFlow() {
 		facturaPickerRef.current?.present();
@@ -780,6 +817,7 @@ export default function ScanScreen() {
 						) : (
 							<ManualEntryPanel
 								selectedFactura={selectedFactura}
+								categories={categories}
 								name={name}
 								category={category}
 								amount={amount}

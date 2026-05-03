@@ -1,4 +1,6 @@
-export type ProductCategory = "obligacion" | "ahorro" | "ocio";
+import type { ProductCategory } from "@/domain/category/category.types";
+
+export type { ProductCategory } from "@/domain/category/category.types";
 
 export interface Producto {
 	id: string;
