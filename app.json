@@ -38,7 +38,17 @@
         }
       ],
       "expo-localization",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
+          "recordAudioAndroid": true,
+          "barcodeScannerEnabled": true
+        }
+      ],
+      "expo-image"
     ],
     "experiments": {
       "typedRoutes": true,
