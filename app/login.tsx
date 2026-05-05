@@ -1,5 +1,4 @@
-import { router } from "expo-router";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { Redirect, router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
 	Animated,
@@ -11,9 +10,9 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { auth } from "@/services/firebase";
 import TextField from "@/components/ui/FormInput/FormInput";
 import colors from "@/constants/colors";
+import { useAuth } from "@/lib/auth";
 import Logo from "@/assets/images/logo.svg";
 
 const backgroundImage = require("@/assets/images/Gemini_Generated_Image_9vrbv69vrbv69vrb.webp");
@@ -136,6 +135,7 @@ function LoginForm({ onClose, onEnter }: LoginFormProps) {
 }
 
 export default function LoginScreen() {
+	const { isInitializing, signIn, user } = useAuth();
 	// Controla si el bottom sheet del login está abierto o cerrado.
 	const [isSheetVisible, setIsSheetVisible] = useState(true);
 
@@ -164,18 +164,16 @@ export default function LoginScreen() {
 	// Intenta autenticar al usuario y, si funciona, entra en la zona principal de la app.
 	const enterApp = async (email: string, password: string) => {
 		try {
-			const userCredential = await signInWithEmailAndPassword(
-				auth,
-				email,
-				password,
-			);
-			console.log(userCredential.user);
+			await signIn(email, password);
 			router.replace("/(tabs)");
 		} catch (error: any) {
 			console.log(`${error.code}: ${error.message}`);
 			throw `${error.code}: ${error.message}`;
 		}
 	};
+
+	if (isInitializing) return <View style={{ flex: 1 }} />;
+	if (user) return <Redirect href="/(tabs)" />;
 
 	return (
 		<View style={{ flex: 1, overflow: "hidden" }}>

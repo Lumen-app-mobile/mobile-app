@@ -4,6 +4,9 @@ import { createContext, type ReactNode, useContext, useMemo, useState } from "re
 export type AppLanguage = "es" | "en" | "ca" | "fr" | "de" | "it" | "pt";
 
 export type TranslationKey =
+	| "auth.logout"
+	| "auth.loggingOut"
+	| "auth.logoutError"
 	| "common.accept"
 	| "common.backToConfig"
 	| "config.title"
@@ -15,6 +18,17 @@ export type TranslationKey =
 	| "config.categories"
 	| "config.data"
 	| "config.information"
+	| "data.import"
+	| "data.sync"
+	| "data.export"
+	| "data.csvPending"
+	| "notifications.reminders"
+	| "notifications.weeklySummary"
+	| "notifications.push"
+	| "information.appName"
+	| "information.softwareVersion"
+	| "information.runtimeVersion"
+	| "information.scheme"
 	| "permissions.camera"
 	| "permissions.storage"
 	| "permissions.location"
@@ -45,6 +59,9 @@ export const LANGUAGE_OPTIONS: { label: string; value: AppLanguage }[] = [
 
 const translations: Record<AppLanguage, Record<TranslationKey, string>> = {
 	es: {
+		"auth.logout": "Cerrar sesión",
+		"auth.loggingOut": "Cerrando sesión...",
+		"auth.logoutError": "No se pudo cerrar sesión. Inténtalo de nuevo.",
 		"common.accept": "Aceptar",
 		"common.backToConfig": "Volver a configuración",
 		"config.title": "configuración",
@@ -56,6 +73,17 @@ const translations: Record<AppLanguage, Record<TranslationKey, string>> = {
 		"config.categories": "Categorías",
 		"config.data": "Datos",
 		"config.information": "Información",
+		"data.import": "Importar",
+		"data.sync": "Sincronizar",
+		"data.export": "Exportar",
+		"data.csvPending": "La conexión CSV está pendiente de implementar.",
+		"notifications.reminders": "Recordatorios",
+		"notifications.weeklySummary": "Resumen semanales",
+		"notifications.push": "Push",
+		"information.appName": "Aplicación",
+		"information.softwareVersion": "Versión de software",
+		"information.runtimeVersion": "Versión runtime",
+		"information.scheme": "Scheme",
 		"permissions.camera": "Acceso a cámara",
 		"permissions.storage": "Almacenamiento",
 		"permissions.location": "Ubicación",
@@ -73,6 +101,9 @@ const translations: Record<AppLanguage, Record<TranslationKey, string>> = {
 		"tabs.config": "CONFIG",
 	},
 	en: {
+		"auth.logout": "Log out",
+		"auth.loggingOut": "Logging out...",
+		"auth.logoutError": "Could not log out. Try again.",
 		"common.accept": "Save",
 		"common.backToConfig": "Back to settings",
 		"config.title": "settings",
@@ -84,6 +115,17 @@ const translations: Record<AppLanguage, Record<TranslationKey, string>> = {
 		"config.categories": "Categories",
 		"config.data": "Data",
 		"config.information": "Information",
+		"data.import": "Import",
+		"data.sync": "Sync",
+		"data.export": "Export",
+		"data.csvPending": "CSV connection is pending implementation.",
+		"notifications.reminders": "Reminders",
+		"notifications.weeklySummary": "Weekly summaries",
+		"notifications.push": "Push",
+		"information.appName": "Application",
+		"information.softwareVersion": "Software version",
+		"information.runtimeVersion": "Runtime version",
+		"information.scheme": "Scheme",
 		"permissions.camera": "Camera access",
 		"permissions.storage": "Storage",
 		"permissions.location": "Location",
@@ -101,6 +143,9 @@ const translations: Record<AppLanguage, Record<TranslationKey, string>> = {
 		"tabs.config": "SETTINGS",
 	},
 	ca: {
+		"auth.logout": "Tancar sessió",
+		"auth.loggingOut": "Tancant sessió...",
+		"auth.logoutError": "No s'ha pogut tancar sessió. Torna-ho a intentar.",
 		"common.accept": "Acceptar",
 		"common.backToConfig": "Tornar a configuració",
 		"config.title": "configuració",
@@ -112,6 +157,17 @@ const translations: Record<AppLanguage, Record<TranslationKey, string>> = {
 		"config.categories": "Categories",
 		"config.data": "Dades",
 		"config.information": "Informació",
+		"data.import": "Importar",
+		"data.sync": "Sincronitzar",
+		"data.export": "Exportar",
+		"data.csvPending": "La connexió CSV està pendent d'implementar.",
+		"notifications.reminders": "Recordatoris",
+		"notifications.weeklySummary": "Resums setmanals",
+		"notifications.push": "Push",
+		"information.appName": "Aplicació",
+		"information.softwareVersion": "Versió de software",
+		"information.runtimeVersion": "Versió runtime",
+		"information.scheme": "Scheme",
 		"permissions.camera": "Accés a la càmera",
 		"permissions.storage": "Emmagatzematge",
 		"permissions.location": "Ubicació",
@@ -129,6 +185,9 @@ const translations: Record<AppLanguage, Record<TranslationKey, string>> = {
 		"tabs.config": "CONFIG",
 	},
 	fr: {
+		"auth.logout": "Se déconnecter",
+		"auth.loggingOut": "Déconnexion...",
+		"auth.logoutError": "Impossible de se déconnecter. Réessayez.",
 		"common.accept": "Enregistrer",
 		"common.backToConfig": "Retour aux paramètres",
 		"config.title": "paramètres",
@@ -140,6 +199,17 @@ const translations: Record<AppLanguage, Record<TranslationKey, string>> = {
 		"config.categories": "Catégories",
 		"config.data": "Données",
 		"config.information": "Information",
+		"data.import": "Importer",
+		"data.sync": "Synchroniser",
+		"data.export": "Exporter",
+		"data.csvPending": "La connexion CSV reste à implémenter.",
+		"notifications.reminders": "Rappels",
+		"notifications.weeklySummary": "Résumés hebdomadaires",
+		"notifications.push": "Push",
+		"information.appName": "Application",
+		"information.softwareVersion": "Version logicielle",
+		"information.runtimeVersion": "Version runtime",
+		"information.scheme": "Scheme",
 		"permissions.camera": "Accès caméra",
 		"permissions.storage": "Stockage",
 		"permissions.location": "Localisation",
@@ -157,6 +227,9 @@ const translations: Record<AppLanguage, Record<TranslationKey, string>> = {
 		"tabs.config": "CONFIG",
 	},
 	de: {
+		"auth.logout": "Abmelden",
+		"auth.loggingOut": "Abmeldung...",
+		"auth.logoutError": "Abmeldung nicht möglich. Versuch es erneut.",
 		"common.accept": "Speichern",
 		"common.backToConfig": "Zurück zu Einstellungen",
 		"config.title": "einstellungen",
@@ -168,6 +241,17 @@ const translations: Record<AppLanguage, Record<TranslationKey, string>> = {
 		"config.categories": "Kategorien",
 		"config.data": "Daten",
 		"config.information": "Informationen",
+		"data.import": "Importieren",
+		"data.sync": "Synchronisieren",
+		"data.export": "Exportieren",
+		"data.csvPending": "Die CSV-Anbindung muss noch implementiert werden.",
+		"notifications.reminders": "Erinnerungen",
+		"notifications.weeklySummary": "Wochenübersichten",
+		"notifications.push": "Push",
+		"information.appName": "Anwendung",
+		"information.softwareVersion": "Softwareversion",
+		"information.runtimeVersion": "Runtime-Version",
+		"information.scheme": "Scheme",
 		"permissions.camera": "Kamerazugriff",
 		"permissions.storage": "Speicher",
 		"permissions.location": "Standort",
@@ -185,6 +269,9 @@ const translations: Record<AppLanguage, Record<TranslationKey, string>> = {
 		"tabs.config": "CONFIG",
 	},
 	it: {
+		"auth.logout": "Esci",
+		"auth.loggingOut": "Uscita...",
+		"auth.logoutError": "Non è stato possibile uscire. Riprova.",
 		"common.accept": "Salva",
 		"common.backToConfig": "Torna alle impostazioni",
 		"config.title": "impostazioni",
@@ -196,6 +283,17 @@ const translations: Record<AppLanguage, Record<TranslationKey, string>> = {
 		"config.categories": "Categorie",
 		"config.data": "Dati",
 		"config.information": "Informazioni",
+		"data.import": "Importa",
+		"data.sync": "Sincronizza",
+		"data.export": "Esporta",
+		"data.csvPending": "La connessione CSV è ancora da implementare.",
+		"notifications.reminders": "Promemoria",
+		"notifications.weeklySummary": "Riepiloghi settimanali",
+		"notifications.push": "Push",
+		"information.appName": "Applicazione",
+		"information.softwareVersion": "Versione software",
+		"information.runtimeVersion": "Versione runtime",
+		"information.scheme": "Scheme",
 		"permissions.camera": "Accesso fotocamera",
 		"permissions.storage": "Archiviazione",
 		"permissions.location": "Posizione",
@@ -213,6 +311,9 @@ const translations: Record<AppLanguage, Record<TranslationKey, string>> = {
 		"tabs.config": "CONFIG",
 	},
 	pt: {
+		"auth.logout": "Terminar sessão",
+		"auth.loggingOut": "A terminar sessão...",
+		"auth.logoutError": "Não foi possível terminar sessão. Tenta novamente.",
 		"common.accept": "Guardar",
 		"common.backToConfig": "Voltar às definições",
 		"config.title": "definições",
@@ -224,6 +325,17 @@ const translations: Record<AppLanguage, Record<TranslationKey, string>> = {
 		"config.categories": "Categorias",
 		"config.data": "Dados",
 		"config.information": "Informação",
+		"data.import": "Importar",
+		"data.sync": "Sincronizar",
+		"data.export": "Exportar",
+		"data.csvPending": "A ligação CSV ainda está por implementar.",
+		"notifications.reminders": "Lembretes",
+		"notifications.weeklySummary": "Resumos semanais",
+		"notifications.push": "Push",
+		"information.appName": "Aplicação",
+		"information.softwareVersion": "Versão de software",
+		"information.runtimeVersion": "Versão runtime",
+		"information.scheme": "Scheme",
 		"permissions.camera": "Acesso à câmara",
 		"permissions.storage": "Armazenamento",
 		"permissions.location": "Localização",

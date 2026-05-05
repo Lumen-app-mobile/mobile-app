@@ -2,25 +2,25 @@
 
 ## Adri
 
-- [ ] Implementar login con JWT.
+- [x] Implementar login con JWT.
       Configurar el flujo de autenticación para que la app reciba, guarde y use un token JWT válido en las llamadas protegidas.
 
-- [ ] Arreglar persistencia del auth de Firebase.
+- [x] Arreglar persistencia del auth de Firebase.
       Mantener la sesión del usuario entre reinicios de la app y evitar que tenga que volver a iniciar sesión si el token sigue siendo válido.
 
-- [ ] Implementar logout.
+- [x] Implementar logout.
       Añadir la acción de cerrar sesión, limpiar credenciales locales y devolver al usuario a la pantalla de login.
 
-- [ ] Implementar las pantallas que todavía no están diseñadas.
+- [x] Implementar las pantallas que todavía no están diseñadas.
       Completar las vistas pendientes manteniendo el sistema visual actual y los patrones de navegación existentes.
 
-- [ ] Arreglar el botón de notificaciones en el header.
+- [x] Arreglar el botón de notificaciones en el header.
       Definir y conectar la acción del botón para que abra la pantalla, sheet o modal de notificaciones.
 
-- [ ] Definir las pautas de notificaciones.
+- [x] Definir las pautas de notificaciones.
       Establecer qué eventos generan notificaciones, cómo se priorizan y qué formato visual tendrán.
 
-- [ ] Añadir icono de Lumen.
+- [x] Añadir icono de Lumen.
       Incorporar el icono final de la app en los assets y revisar que se usa correctamente en la configuración de Expo.
 
 ## Jhonny

@@ -11,6 +11,7 @@ import React, { useEffect } from "react";
 import { View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
+import { AuthProvider } from "@/lib/auth";
 import { I18nProvider } from "@/lib/i18n";
 
 import "../global.css";
@@ -34,15 +35,17 @@ export default function RootLayout() {
 		<GestureHandlerRootView style={{ flex: 1 }}>
 			<BottomSheetModalProvider>
 				<I18nProvider>
-					<Stack screenOptions={{ headerShown: false }}>
-						<Stack.Screen name="index" />
-						<Stack.Screen name="login" />
-						<Stack.Screen name="(tabs)" />
-						<Stack.Screen
-							name="stats"
-							options={{ presentation: "modal" }}
-						/>
-					</Stack>
+					<AuthProvider>
+						<Stack screenOptions={{ headerShown: false }}>
+							<Stack.Screen name="index" />
+							<Stack.Screen name="login" />
+							<Stack.Screen name="(tabs)" />
+							<Stack.Screen
+								name="stats"
+								options={{ presentation: "modal" }}
+							/>
+						</Stack>
+					</AuthProvider>
 				</I18nProvider>
 			</BottomSheetModalProvider>
 		</GestureHandlerRootView>
