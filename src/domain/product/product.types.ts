@@ -9,4 +9,5 @@ export interface Producto {
 	price: number;
 	date: string;
 	category: ProductCategory;
+	transactionId?: number;
 }

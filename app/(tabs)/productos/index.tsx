@@ -27,7 +27,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { demoProducts } from "@/assets/data/productData";
+import { transactionListToProductoList } from "@/mappers/transaction.mapper";
+import { listarTransacciones } from "@/services/transactions";
 import AhorroIndicator from "@/assets/images/Property 1=ahorro.svg";
 import ObligacionIndicator from "@/assets/images/Property 1=obligacion.svg";
 import OcioIndicator from "@/assets/images/Property 1=ocio.svg";
@@ -245,6 +246,24 @@ function hasExtraFilters({ selectedBrands, minPrice, maxPrice }: ExtraFilters) {
 		selectedBrands.length > 0 ||
 		minPrice.trim().length > 0 ||
 		maxPrice.trim().length > 0
+	);
+}
+
+function EmptyState() {
+	return (
+		<View className="items-center px-8 py-20">
+			<MaterialIcons
+				name="receipt-long"
+				size={64}
+				color={colors.secondary.v2}
+			/>
+			<Text className="mt-4 text-center font-mono-bold text-xl leading-7 text-base-black">
+				No hay productos
+			</Text>
+			<Text className="mt-2 text-center font-mono text-base leading-5 text-secondary-v2">
+				Escanea ya tu primer ticket
+			</Text>
+		</View>
 	);
 }
 
@@ -791,8 +810,27 @@ export default function ProductosScreen() {
 	const [minPrice, setMinPrice] = useState("");
 	const [maxPrice, setMaxPrice] = useState("");
 	const [isEasterEggVisible, setIsEasterEggVisible] = useState(false);
+	const [products, setProducts] = useState<Producto[]>([]);
+	const [isLoading, setIsLoading] = useState(true);
 	const extraFiltersSheetRef = useRef<BottomSheetModal>(null);
 	const filterTapStreakRef = useRef(0);
+
+	const realApi = !!process.env.EXPO_PUBLIC_API_BASE_URL;
+
+	useEffect(() => {
+		if (!realApi) {
+			setIsLoading(false);
+			return;
+		}
+
+		listarTransacciones()
+			.then(transactionListToProductoList)
+			.then(setProducts)
+			.catch((err) => {
+				console.warn("[Productos] Failed to fetch products:", err);
+			})
+			.finally(() => setIsLoading(false));
+	}, [realApi]);
 
 	const extraFilters = useMemo(
 		() => ({ selectedBrands, minPrice, maxPrice }),
@@ -800,8 +838,8 @@ export default function ProductosScreen() {
 	);
 
 	const categoryFilteredProducts = useMemo(
-		() => filterProductsByCategory(demoProducts, selectedFilter),
-		[selectedFilter],
+		() => filterProductsByCategory(products, selectedFilter),
+		[products, selectedFilter],
 	);
 
 	const extraFilteredProducts = useMemo(
@@ -829,7 +867,7 @@ export default function ProductosScreen() {
 		[searchedProducts],
 	);
 
-	const brands = useMemo(() => getUniqueBrands(demoProducts), []);
+	const brands = useMemo(() => getUniqueBrands(products), [products]);
 	const extraFiltersActive = hasExtraFilters(extraFilters);
 
 	function handleNotificationsPress() {}
@@ -935,14 +973,20 @@ export default function ProductosScreen() {
 						</View>
 					</View>
 
-					<ProductListSection
-						title="Lo más caro"
-						products={mostExpensiveProducts}
-					/>
-					<ProductListSection
-						title="Productos"
-						products={recentProducts}
-					/>
+					{!isLoading && products.length === 0 ? (
+						<EmptyState />
+					) : (
+						<>
+							<ProductListSection
+								title="Lo más caro"
+								products={mostExpensiveProducts}
+							/>
+							<ProductListSection
+								title="Productos"
+								products={recentProducts}
+							/>
+						</>
+					)}
 				</View>
 			</ScrollView>
 

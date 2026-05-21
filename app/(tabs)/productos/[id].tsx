@@ -1,12 +1,14 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import AhorroIndicator from "@/assets/images/Property 1=ahorro.svg";
 import ObligacionIndicator from "@/assets/images/Property 1=obligacion.svg";
 import OcioIndicator from "@/assets/images/Property 1=ocio.svg";
-import { demoProducts } from "@/assets/data/productData";
+import { transactionListToProductoList } from "@/mappers/transaction.mapper";
+import { listarTransacciones } from "@/services/transactions";
 import Header from "@/components/layout/Header/Header";
 import colors from "@/constants/colors";
 import {
@@ -125,8 +127,22 @@ function ProductNotFound() {
 export default function ProductDetailScreen() {
 	const { id } = useLocalSearchParams<{ id: string }>();
 	const productId = Array.isArray(id) ? id[0] : id;
-	const product = demoProducts.find((item) => item.id === productId);
+	const [product, setProduct] = useState<Producto | undefined>();
+	const [isReady, setIsReady] = useState(false);
 
+	useEffect(() => {
+		listarTransacciones()
+			.then(transactionListToProductoList)
+			.then((allProducts) => {
+				setProduct(allProducts.find((item) => item.id === productId));
+			})
+			.catch((err) => {
+				console.warn("[Productos] Failed to fetch product:", err);
+			})
+			.finally(() => setIsReady(true));
+	}, [productId]);
+
+	if (!isReady) return null;
 	if (!product) return <ProductNotFound />;
 
 	return (
@@ -182,6 +198,28 @@ export default function ProductDetailScreen() {
 								value={product.id}
 							/>
 						</View>
+
+						{product.transactionId && (
+							<Pressable
+								accessibilityRole="button"
+								accessibilityLabel="Ver factura relacionada"
+								onPress={() =>
+									router.push({
+										pathname: "/recibo/[id]",
+										params: { id: String(product.transactionId) },
+									})
+								}
+								className="h-[52px] flex-row items-center justify-center gap-2 border-[3px] border-base-black bg-secondary-v1 px-[19px] shadow-[4px_4px_1px_black]">
+								<MaterialIcons
+									name="receipt-long"
+									size={24}
+									color={colors.base.white}
+								/>
+								<Text className="font-mono-bold text-sm leading-4 text-base-white">
+									Ver factura
+								</Text>
+							</Pressable>
+						)}
 					</View>
 				</View>
 			</ScrollView>
