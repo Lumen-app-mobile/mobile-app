@@ -1,3 +1,8 @@
+/**
+ * @deprecated Reemplazado por src/services/transactions.ts
+ * Este mock se mantiene temporalmente mientras se migran las pantallas.
+ * Las nuevas implementaciones deben usar transactions.ts
+ */
 import {
 	demoFacturaNotifications,
 	demoFacturas,

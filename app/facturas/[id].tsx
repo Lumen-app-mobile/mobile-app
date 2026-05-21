@@ -7,7 +7,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "@/components/layout/Header/Header";
 import colors from "@/constants/colors";
 import { Factura, FacturaField, FacturaProduct } from "@/domain/factura/factura.types";
-import { denegarFactura, obtenerFactura, validarFactura } from "@/services/facturas";
+import { obtenerTransaccion } from "@/services/transactions";
+import { transactionDtoToFactura } from "@/mappers/transaction.mapper";
 
 const currencyFormatter = new Intl.NumberFormat("es-ES", {
 	style: "currency",
@@ -196,28 +197,42 @@ export default function FacturaDetailScreen() {
 	useEffect(() => {
 		if (!facturaId) return;
 
-		obtenerFactura(facturaId).then((nextFactura) => {
-			setFactura(nextFactura);
+		const id = Number(facturaId);
+		if (Number.isNaN(id)) {
+			console.warn(`[FacturaDetail] Invalid facturaId: ${facturaId}`);
 			setLoading(false);
-		});
+			return;
+		}
+
+		obtenerTransaccion(id)
+			.then((dto) => {
+				setFactura(transactionDtoToFactura(dto));
+				setLoading(false);
+			})
+			.catch((err) => {
+				console.warn(`[FacturaDetail] Error fetching factura ${facturaId}:`, err);
+				setLoading(false);
+			});
 	}, [facturaId]);
 
 	async function handleValidate() {
 		if (!factura) return;
-
 		setSubmitting(true);
-		const updatedFactura = await validarFactura(factura.id);
-		setFactura(updatedFactura);
-		setSubmitting(false);
+		try {
+			console.warn("[FacturaDetail] Validate API not implemented yet");
+		} finally {
+			setSubmitting(false);
+		}
 	}
 
 	async function handleDeny() {
 		if (!factura) return;
-
 		setSubmitting(true);
-		const updatedFactura = await denegarFactura(factura.id);
-		setFactura(updatedFactura);
-		setSubmitting(false);
+		try {
+			console.warn("[FacturaDetail] Deny API not implemented yet");
+		} finally {
+			setSubmitting(false);
+		}
 	}
 
 	if (loading) {

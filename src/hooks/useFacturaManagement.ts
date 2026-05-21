@@ -1,123 +1,215 @@
 import { useEffect, useState } from "react";
+import type { Factura, FacturaNotification, FacturaUploadStatus } from "@/domain/factura/factura.types";
+import type { CreateTransactionRequestDto } from "@/dtos/transaction/transaction.dtos";
 import {
-  agregarProductoManualAFactura,
-  listarFacturas,
-  subirFacturaMock,
+	listarTransacciones,
+	crearTransaccionConImagen,
+} from "@/services/transactions";
+import {
+	listarFacturas as listarFacturasMock,
+	subirFacturaMock,
+	agregarProductoManualAFactura,
 } from "@/services/facturas";
-import { Factura, FacturaUploadStatus } from "@/domain/factura/factura.types";
-import { ProductCategory } from "@/components/ui/CategorySelect/CategorySelect";
+import type { ProductCategory } from "@/components/ui/CategorySelect/CategorySelect";
+import { transactionDtoToFactura, transactionDtoListToFacturaList } from "@/mappers/transaction.mapper";
+
+function useRealApi(): boolean {
+	const url = process.env.EXPO_PUBLIC_API_BASE_URL;
+	console.log(`[FacturaManagement] EXPO_PUBLIC_API_BASE_URL = "${url}" → realApi = ${!!url}`);
+	return !!url;
+}
+
+function buildCreatePayload(): CreateTransactionRequestDto {
+	return {
+		type: "expense",
+		amount: 0,
+		currency: "EUR",
+		category_id: 1,
+		move_date: new Date().toISOString(),
+		process_ocr: true,
+	};
+}
 
 export function useFacturaManagement() {
-  const [facturas, setFacturas] = useState<Factura[]>([]);
-  const [selectedFactura, setSelectedFactura] = useState<Factura | null>(null);
-  const [uploadStatus, setUploadStatus] = useState<FacturaUploadStatus>("idle");
-  const [ultimaFacturaId, setLastFacturaId] = useState<string | null>(null);
-  const [statusError, setStatusError] = useState<string | undefined>();
-  const [isPreviewVisible, setIsPreviewVisible] = useState(false);
+	const [facturas, setFacturas] = useState<Factura[]>([]);
+	const [selectedFactura, setSelectedFactura] = useState<Factura | null>(null);
+	const [uploadStatus, setUploadStatus] = useState<FacturaUploadStatus>("idle");
+	const [ultimaFacturaId, setLastFacturaId] = useState<string | null>(null);
+	const [statusError, setStatusError] = useState<string | undefined>();
+	const [isPreviewVisible, setIsPreviewVisible] = useState(false);
+	const [notifications, setNotifications] = useState<FacturaNotification[]>([]);
+	const realApi = useRealApi();
 
-  useEffect(() => {
-    listarFacturas(5).then((nextFacturas) => {
-      setFacturas(nextFacturas);
-      setSelectedFactura(
-        (currentFactura) => currentFactura ?? nextFacturas[0] ?? null,
-      );
-    });
-  }, []);
+	async function refreshFacturas(): Promise<Factura[]> {
+		try {
+			const transactions = await listarTransacciones();
+			const mapped = transactionDtoListToFacturaList(transactions);
+			setFacturas(mapped);
+			return mapped;
+		} catch (err) {
+			console.warn("[FacturaManagement] listarTransacciones failed, using cached data:", err);
+			return [];
+		}
+	}
 
-  async function handleUploadFactura() {
-    setUploadStatus("uploading");
-    setStatusError(undefined);
+	useEffect(() => {
+		if (realApi) {
+			refreshFacturas().then((mapped) => {
+				setSelectedFactura((current) => current ?? mapped[0] ?? null);
+			});
+		} else {
+			listarFacturasMock(5).then((nextFacturas) => {
+				setFacturas(nextFacturas);
+				setSelectedFactura(
+					(current) => current ?? nextFacturas[0] ?? null,
+				);
+			});
+		}
+	}, [realApi]);
 
-    const result = await subirFacturaMock();
-    setUploadStatus(result.status);
-    setLastFacturaId(result.facturaId ?? null);
-    setStatusError(result.errorMessage);
-    setIsPreviewVisible(false);
+	async function handleUploadFactura(imageUri?: string) {
+		setUploadStatus("uploading");
+		setStatusError(undefined);
 
-    const nextFacturas = await listarFacturas(5);
-    setFacturas(nextFacturas);
-    if (result.facturaId) {
-      const uploadedFactura = nextFacturas.find(
-        (factura) => factura.id === result.facturaId,
-      );
-      setSelectedFactura(uploadedFactura ?? nextFacturas[0] ?? null);
-    }
-  }
+		if (realApi && imageUri) {
+			try {
+				const transaction = await crearTransaccionConImagen(
+					buildCreatePayload(),
+					imageUri,
+					"image/jpeg",
+					`ticket-${Date.now()}.jpg`,
+				);
 
-  async function handleManualSubmit(
-    selectedFactura: Factura | null,
-    name: string,
-    category: ProductCategory,
-    amount: string,
-    market: string,
-    onSuccess: () => void,
-  ) {
-    const parsedAmount = Number(amount.trim().replace(",", "."));
+				setUploadStatus("success");
+				setLastFacturaId(String(transaction.id));
+				setIsPreviewVisible(false);
 
-    if (
-      !selectedFactura ||
-      !name.trim() ||
-      !market.trim() ||
-      !Number.isFinite(parsedAmount)
-    ) {
-      setUploadStatus("error");
-      setStatusError("Selecciona una factura y completa todos los campos.");
-      return;
-    }
+				const notification: FacturaNotification = {
+					id: `notification-${transaction.id}`,
+					facturaId: String(transaction.id),
+					title: "Factura lista para revisar",
+					detail: transaction.company || `#${transaction.id}`,
+					createdAt: new Date().toISOString(),
+					read: false,
+				};
+				setNotifications((prev) => [notification, ...prev]);
 
-    const updatedFactura = await agregarProductoManualAFactura(
-      selectedFactura.id,
-      {
-        name: name.trim(),
-        category,
-        amount: parsedAmount,
-        market: market.trim(),
-      },
-    );
+				const mappedFactura = transactionDtoToFactura(transaction);
+				setSelectedFactura(mappedFactura);
+				setFacturas((prev) => {
+					const idx = prev.findIndex((f) => f.id === String(transaction.id));
+					if (idx >= 0) {
+						const next = [...prev];
+						next[idx] = mappedFactura;
+						return next;
+					}
+					return [mappedFactura, ...prev];
+				});
 
-    if (!updatedFactura) {
-      setUploadStatus("error");
-      setStatusError("No se pudo vincular el producto a la factura.");
-      return;
-    }
+				refreshFacturas().catch((err) => {
+					console.warn("[FacturaManagement] refresh after upload failed:", err);
+				});
+			} catch (err: unknown) {
+				const message =
+					err instanceof Error ? err.message : "Error al subir la factura";
+				setUploadStatus("error");
+				setStatusError(message);
+				setIsPreviewVisible(false);
+			}
+		} else {
+			const result = await subirFacturaMock();
+			setUploadStatus(result.status);
+			setLastFacturaId(result.facturaId ?? null);
+			setStatusError(result.errorMessage);
+			setIsPreviewVisible(false);
 
-    setSelectedFactura(updatedFactura);
-    setLastFacturaId(updatedFactura.id);
-    setUploadStatus("success");
-    setStatusError(undefined);
-    onSuccess();
-    setFacturas(await listarFacturas(5));
-  }
+			const nextFacturas = await listarFacturasMock(5);
+			setFacturas(nextFacturas);
+			if (result.facturaId) {
+				const uploadedFactura = nextFacturas.find(
+					(factura) => factura.id === result.facturaId,
+				);
+				setSelectedFactura(uploadedFactura ?? nextFacturas[0] ?? null);
+			}
+		}
+	}
 
-  function handleSelectFactura(factura: Factura) {
-    setSelectedFactura(factura);
-  }
+	async function handleManualSubmit(
+		currentFactura: Factura | null,
+		name: string,
+		category: ProductCategory,
+		amount: string,
+		market: string,
+		onSuccess: () => void,
+	) {
+		const parsedAmount = Number(amount.trim().replace(",", "."));
 
-  function resetForm() {
-    setUploadStatus("idle");
-    setStatusError(undefined);
-  }
+		if (
+			!currentFactura ||
+			!name.trim() ||
+			!market.trim() ||
+			!Number.isFinite(parsedAmount)
+		) {
+			setUploadStatus("error");
+			setStatusError("Selecciona una factura y completa todos los campos.");
+			return;
+		}
 
-  const completedUploadStatus =
-    uploadStatus === "success" ||
-    uploadStatus === "not_complete" ||
-    uploadStatus === "error"
-      ? uploadStatus
-      : null;
+		const updatedFactura = await agregarProductoManualAFactura(
+			currentFactura.id,
+			{
+				name: name.trim(),
+				category,
+				amount: parsedAmount,
+				market: market.trim(),
+			},
+		);
 
-  return {
-    facturas,
-    selectedFactura,
-    setSelectedFactura,
-    uploadStatus,
-    ultimaFacturaId,
-    statusError,
-    isPreviewVisible,
-    setIsPreviewVisible,
-    completedUploadStatus,
-    handleUploadFactura,
-    handleManualSubmit,
-    handleSelectFactura,
-    resetForm,
-  };
+		if (!updatedFactura) {
+			setUploadStatus("error");
+			setStatusError("No se pudo vincular el producto a la factura.");
+			return;
+		}
+
+		setSelectedFactura(updatedFactura);
+		setLastFacturaId(updatedFactura.id);
+		setUploadStatus("success");
+		setStatusError(undefined);
+		onSuccess();
+		setFacturas(realApi ? facturas : await listarFacturasMock(5));
+	}
+
+	function handleSelectFactura(factura: Factura) {
+		setSelectedFactura(factura);
+	}
+
+	function resetForm() {
+		setUploadStatus("idle");
+		setStatusError(undefined);
+	}
+
+	const completedUploadStatus =
+		uploadStatus === "success" ||
+		uploadStatus === "not_complete" ||
+		uploadStatus === "error"
+			? uploadStatus
+			: null;
+
+	return {
+		facturas,
+		selectedFactura,
+		setSelectedFactura,
+		uploadStatus,
+		ultimaFacturaId,
+		statusError,
+		isPreviewVisible,
+		setIsPreviewVisible,
+		completedUploadStatus,
+		notifications,
+		realApi,
+		handleUploadFactura,
+		handleManualSubmit,
+		handleSelectFactura,
+		resetForm,
+	};
 }

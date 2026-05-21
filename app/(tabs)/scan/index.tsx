@@ -37,6 +37,8 @@ export default function ScanScreen() {
     isPreviewVisible,
     setIsPreviewVisible,
     completedUploadStatus,
+    notifications,
+    realApi,
     handleUploadFactura,
     handleManualSubmit,
     handleSelectFactura,
@@ -92,9 +94,13 @@ export default function ScanScreen() {
   }
 
   const handleSendInvoice = async () => {
-    await sendInvoice(() => {
-      handleUploadFactura();
-    });
+    if (uri) {
+      await handleUploadFactura(uri);
+    } else {
+      await sendInvoice(() => {
+        handleUploadFactura();
+      });
+    }
     setIsPreviewVisible(false);
   };
 
@@ -127,7 +133,7 @@ export default function ScanScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-base-white">
-      <Header />
+      <Header notifications={notifications} />
 
       <ScrollView
         className="flex-1"
@@ -136,9 +142,16 @@ export default function ScanScreen() {
         contentInsetAdjustmentBehavior="automatic"
       >
         <View className="gap-4 px-4 pb-36 pt-4">
-          <Text className="font-mono-bold text-4xl leading-[48px] text-base-black">
-            scan
-          </Text>
+          <View className="flex-row items-center gap-3">
+            <Text className="font-mono-bold text-4xl leading-[48px] text-base-black">
+              scan
+            </Text>
+            <View className={`self-start border-[2px] border-base-black px-2 py-1 ${realApi ? 'bg-green-200' : 'bg-red-200'}`}>
+              <Text className="font-mono-bold text-[10px] leading-3">
+                {realApi ? 'API' : 'MOCK'}
+              </Text>
+            </View>
+          </View>
 
           <BrowserTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
