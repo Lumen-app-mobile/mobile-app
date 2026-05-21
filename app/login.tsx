@@ -21,24 +21,34 @@ const SCREEN_HEIGHT = Dimensions.get("window").height;
 
 type LoginFormProps = {
 	onClose: () => void;
-	onEnter: (email: string, password: string) => void;
+	onEnter: (email: string, password: string) => Promise<void>;
+	onRegister: (email: string, password: string, username: string) => Promise<void>;
 };
 
-// Hoja inferior con los campos del login y las acciones de entrar/cerrar.
-function LoginForm({ onClose, onEnter }: LoginFormProps) {
-	// Estado local del formulario antes de enviarlo a Firebase.
+function LoginForm({ onClose, onEnter, onRegister }: LoginFormProps) {
+	const [mode, setMode] = useState<"login" | "register">("login");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
+	const [username, setUsername] = useState("");
 	const [error, setError] = useState("");
 	const [loading, setLoading] = useState(false);
 
-	const handleEnter = async () => {
+	const handleSubmit = async () => {
 		setError("");
 		setLoading(true);
 		try {
-			await onEnter(email, password);
-		} catch {
-			setError("Email o contraseña incorrectos.");
+			if (mode === "register") {
+				if (!username.trim()) {
+					throw new Error("El nombre de usuario es obligatorio.");
+				}
+				await onRegister(email, password, username.trim());
+			} else {
+				await onEnter(email, password);
+			}
+		} catch (err: unknown) {
+			const message =
+				err instanceof Error ? err.message : "Email o contraseña incorrectos.";
+			setError(message);
 		} finally {
 			setLoading(false);
 		}
@@ -69,7 +79,7 @@ function LoginForm({ onClose, onEnter }: LoginFormProps) {
 						fontWeight: "700",
 						color: colors.base.black,
 					}}>
-					Login
+					{mode === "login" ? "Login" : "Registro"}
 				</Text>
 				<Text
 					style={{
@@ -77,9 +87,22 @@ function LoginForm({ onClose, onEnter }: LoginFormProps) {
 						color: "#666",
 						textAlign: "center",
 					}}>
-					Entra para ver tus pestañas principales.
+					{mode === "login"
+						? "Entra para ver tus pestañas principales."
+						: "Crea tu cuenta para empezar."}
 				</Text>
 			</View>
+
+			{mode === "register" ? (
+				<TextField
+					label="Nombre de usuario"
+					placeholder="juanperez"
+					size="md"
+					value={username}
+					onChangeText={setUsername}
+					autoCapitalize="none"
+				/>
+			) : null}
 
 			<TextField
 				label="Email"
@@ -106,7 +129,7 @@ function LoginForm({ onClose, onEnter }: LoginFormProps) {
 			) : null}
 
 			<Pressable
-				onPress={handleEnter}
+				onPress={handleSubmit}
 				disabled={loading}
 				style={{
 					backgroundColor: colors.secondary.v1,
@@ -121,7 +144,24 @@ function LoginForm({ onClose, onEnter }: LoginFormProps) {
 						fontWeight: "700",
 						fontSize: 16,
 					}}>
-					{loading ? "Entrando..." : "Entrar"}
+					{loading
+						? "Entrando..."
+						: mode === "login"
+							? "Entrar"
+							: "Crear cuenta"}
+				</Text>
+			</Pressable>
+
+			<Pressable
+				onPress={() => {
+					setMode(mode === "login" ? "register" : "login");
+					setError("");
+				}}
+				style={{ alignItems: "center" }}>
+				<Text style={{ color: colors.secondary.v1 }}>
+					{mode === "login"
+						? "¿No tienes cuenta? Regístrate"
+						: "¿Ya tienes cuenta? Inicia sesión"}
 				</Text>
 			</Pressable>
 
@@ -135,8 +175,7 @@ function LoginForm({ onClose, onEnter }: LoginFormProps) {
 }
 
 export default function LoginScreen() {
-	const { isInitializing, signIn, user } = useAuth();
-	// Controla si el bottom sheet del login está abierto o cerrado.
+	const { isInitializing, signIn, register, user } = useAuth();
 	const [isSheetVisible, setIsSheetVisible] = useState(true);
 
 	const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
@@ -161,15 +200,14 @@ export default function LoginScreen() {
 	const openSheet = () => setIsSheetVisible(true);
 	const closeSheet = () => setIsSheetVisible(false);
 
-	// Intenta autenticar al usuario y, si funciona, entra en la zona principal de la app.
 	const enterApp = async (email: string, password: string) => {
-		try {
-			await signIn(email, password);
-			router.replace("/(tabs)");
-		} catch (error: any) {
-			console.log(`${error.code}: ${error.message}`);
-			throw `${error.code}: ${error.message}`;
-		}
+		await signIn(email, password);
+		router.replace("/(tabs)");
+	};
+
+	const registerApp = async (email: string, password: string, username: string) => {
+		await register(email, password, username);
+		router.replace("/(tabs)");
 	};
 
 	if (isInitializing) return <View style={{ flex: 1 }} />;
@@ -177,7 +215,6 @@ export default function LoginScreen() {
 
 	return (
 		<View style={{ flex: 1, overflow: "hidden" }}>
-			{/* Imagen cubre toda la pantalla como fondo absoluto */}
 			<ImageBackground
 				source={backgroundImage}
 				resizeMode="cover"
@@ -193,7 +230,6 @@ export default function LoginScreen() {
 				/>
 			</ImageBackground>
 
-			{/* Título posicionado absolutamente arriba */}
 			<SafeAreaView
 				style={{
 					position: "absolute",
@@ -208,7 +244,6 @@ export default function LoginScreen() {
 				/>
 			</SafeAreaView>
 
-			{/* Bottom sheet animado deslizando desde abajo */}
 			<Animated.View
 				style={{
 					transform: [{ translateY: slideAnim }],
@@ -221,6 +256,7 @@ export default function LoginScreen() {
 					<LoginForm
 						onClose={closeSheet}
 						onEnter={enterApp}
+						onRegister={registerApp}
 					/>
 				</SafeAreaView>
 			</Animated.View>

@@ -17,6 +17,7 @@ export type TranslationKey =
 	| "config.notifications"
 	| "config.categories"
 	| "config.data"
+	| "config.salary"
 	| "config.information"
 	| "data.import"
 	| "data.sync"
@@ -72,6 +73,7 @@ const translations: Record<AppLanguage, Record<TranslationKey, string>> = {
 		"config.notifications": "Notificaciones",
 		"config.categories": "Categorías",
 		"config.data": "Datos",
+		"config.salary": "Sueldo",
 		"config.information": "Información",
 		"data.import": "Importar",
 		"data.sync": "Sincronizar",
@@ -114,6 +116,7 @@ const translations: Record<AppLanguage, Record<TranslationKey, string>> = {
 		"config.notifications": "Notifications",
 		"config.categories": "Categories",
 		"config.data": "Data",
+		"config.salary": "Salary",
 		"config.information": "Information",
 		"data.import": "Import",
 		"data.sync": "Sync",
@@ -156,6 +159,7 @@ const translations: Record<AppLanguage, Record<TranslationKey, string>> = {
 		"config.notifications": "Notificacions",
 		"config.categories": "Categories",
 		"config.data": "Dades",
+		"config.salary": "Sou",
 		"config.information": "Informació",
 		"data.import": "Importar",
 		"data.sync": "Sincronitzar",
@@ -198,6 +202,7 @@ const translations: Record<AppLanguage, Record<TranslationKey, string>> = {
 		"config.notifications": "Notifications",
 		"config.categories": "Catégories",
 		"config.data": "Données",
+		"config.salary": "Salaire",
 		"config.information": "Information",
 		"data.import": "Importer",
 		"data.sync": "Synchroniser",
@@ -240,6 +245,7 @@ const translations: Record<AppLanguage, Record<TranslationKey, string>> = {
 		"config.notifications": "Benachrichtigungen",
 		"config.categories": "Kategorien",
 		"config.data": "Daten",
+		"config.salary": "Gehalt",
 		"config.information": "Informationen",
 		"data.import": "Importieren",
 		"data.sync": "Synchronisieren",
@@ -282,6 +288,7 @@ const translations: Record<AppLanguage, Record<TranslationKey, string>> = {
 		"config.notifications": "Notifiche",
 		"config.categories": "Categorie",
 		"config.data": "Dati",
+		"config.salary": "Stipendio",
 		"config.information": "Informazioni",
 		"data.import": "Importa",
 		"data.sync": "Sincronizza",
@@ -324,6 +331,7 @@ const translations: Record<AppLanguage, Record<TranslationKey, string>> = {
 		"config.notifications": "Notificações",
 		"config.categories": "Categorias",
 		"config.data": "Dados",
+		"config.salary": "Salário",
 		"config.information": "Informação",
 		"data.import": "Importar",
 		"data.sync": "Sincronizar",
