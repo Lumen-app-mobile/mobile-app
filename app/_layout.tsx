@@ -41,6 +41,10 @@ export default function RootLayout() {
 							<Stack.Screen name="login" />
 							<Stack.Screen name="(tabs)" />
 							<Stack.Screen
+								name="recibo/[id]"
+								options={{ presentation: "modal" }}
+							/>
+							<Stack.Screen
 								name="stats"
 								options={{ presentation: "modal" }}
 							/>
