@@ -48,6 +48,11 @@ const SYSTEM_ITEMS: ConfigItem[] = [
 		href: "/config/datos",
 	},
 	{
+		labelKey: "config.salary",
+		icon: "euro",
+		href: "/config/sueldo",
+	},
+	{
 		labelKey: "config.information",
 		icon: "info-outline",
 		href: "/config/informacion",
