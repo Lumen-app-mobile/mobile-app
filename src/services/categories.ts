@@ -1,94 +1,117 @@
+import type { CategoryIcon, ProductCategoryOption } from "@/domain/category/category.types";
 import {
 	BASE_PRODUCT_CATEGORIES,
-	DEFAULT_PRODUCT_CATEGORY,
-	ProductCategory,
-	ProductCategoryOption,
 	isBaseProductCategory,
 } from "@/domain/category/category.types";
+import type { CategoryDto } from "@/dtos/category/category.dtos";
+import { authenticatedFetch, handleApiResponse } from "@/services/api";
 
-let categoriesStore: ProductCategoryOption[] = BASE_PRODUCT_CATEGORIES.map(
-	(category) => ({ ...category }),
-);
-
-function cloneCategory(category: ProductCategoryOption): ProductCategoryOption {
-	return { ...category };
+function mapTypeToIcon(type: "income" | "expense"): CategoryIcon {
+	return type === "income" ? "trending-up" : "trending-down";
 }
 
-function delay<T>(value: T, ms = 120) {
-	return new Promise<T>((resolve) => {
-		setTimeout(() => resolve(value), ms);
-	});
+function toUiCategory(dto: CategoryDto): ProductCategoryOption {
+	return {
+		id: String(dto.id),
+		label: dto.name,
+		icon: mapTypeToIcon(dto.type),
+		isBase: false,
+	};
 }
 
-function normalizeCategoryLabel(label: string) {
-	return label.trim().replace(/\s+/g, " ");
+export async function listarCategoriasRaw(): Promise<CategoryDto[]> {
+	try {
+		const response = await authenticatedFetch("api/categories");
+		return handleApiResponse<CategoryDto[]>(response);
+	} catch {
+		return [];
+	}
 }
 
-function buildCategoryId(label: string): ProductCategory {
-	const normalizedLabel = normalizeCategoryLabel(label)
-		.toLowerCase()
-		.normalize("NFD")
-		.replace(/[\u0300-\u036f]/g, "")
-		.replace(/[^a-z0-9]+/g, "-")
-		.replace(/^-+|-+$/g, "");
+export async function listarCategorias(
+	type?: "income" | "expense",
+): Promise<ProductCategoryOption[]> {
+	try {
+		const path = type
+			? `api/categories?type=${type}`
+			: "api/categories";
+		const response = await authenticatedFetch(path);
 
-	return `custom-${normalizedLabel || Date.now()}-${Date.now()}`;
-}
+		if (!response.ok) {
+			return [...BASE_PRODUCT_CATEGORIES];
+		}
 
-export async function listarCategorias(): Promise<ProductCategoryOption[]> {
-	return delay(categoriesStore.map(cloneCategory));
+		const data: CategoryDto[] = await response.json();
+
+		return [
+			...BASE_PRODUCT_CATEGORIES,
+			...data.filter((dto) => !isBaseProductCategory(dto.name)).map(toUiCategory),
+		];
+	} catch {
+		return [...BASE_PRODUCT_CATEGORIES];
+	}
 }
 
 export async function crearCategoria(input: {
 	label: string;
+	type: "income" | "expense";
 }): Promise<ProductCategoryOption | null> {
-	const label = normalizeCategoryLabel(input.label);
+	try {
+		const response = await authenticatedFetch("api/categories", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ name: input.label, type: input.type }),
+		});
 
-	if (!label) return delay(null);
+		if (!response.ok) return null;
 
-	const category: ProductCategoryOption = {
-		id: buildCategoryId(label),
-		label,
-		icon: "category",
-		isBase: false,
-	};
+		const data: CategoryDto = await response.json();
 
-	categoriesStore = [...categoriesStore, category];
-
-	return delay(cloneCategory(category));
+		return toUiCategory(data);
+	} catch {
+		return null;
+	}
 }
 
 export async function editarCategoria(
-	categoryId: ProductCategory,
+	categoryId: string,
 	input: { label: string },
 ): Promise<ProductCategoryOption | null> {
-	if (isBaseProductCategory(categoryId)) return delay(null);
+	if (isBaseProductCategory(categoryId as any)) return null;
 
-	const label = normalizeCategoryLabel(input.label);
+	try {
+		const response = await authenticatedFetch(
+			`api/categories/${categoryId}`,
+			{
+				method: "PUT",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ name: input.label }),
+			},
+		);
 
-	if (!label) return delay(null);
+		if (!response.ok) return null;
 
-	const category = categoriesStore.find((item) => item.id === categoryId);
+		const data: CategoryDto = await response.json();
 
-	if (!category || category.isBase) return delay(null);
-
-	const updatedCategory = { ...category, label };
-	categoriesStore = categoriesStore.map((item) =>
-		item.id === categoryId ? updatedCategory : item,
-	);
-
-	return delay(cloneCategory(updatedCategory));
+		return toUiCategory(data);
+	} catch {
+		return null;
+	}
 }
 
 export async function eliminarCategoria(
-	categoryId: ProductCategory,
+	categoryId: string,
 ): Promise<boolean> {
-	if (categoryId === DEFAULT_PRODUCT_CATEGORY || isBaseProductCategory(categoryId)) {
-		return delay(false);
+	if (isBaseProductCategory(categoryId as any)) return false;
+
+	try {
+		const response = await authenticatedFetch(
+			`api/categories/${categoryId}`,
+			{ method: "DELETE" },
+		);
+
+		return response.status === 204;
+	} catch {
+		return false;
 	}
-
-	const previousLength = categoriesStore.length;
-	categoriesStore = categoriesStore.filter((category) => category.id !== categoryId);
-
-	return delay(categoriesStore.length !== previousLength);
 }

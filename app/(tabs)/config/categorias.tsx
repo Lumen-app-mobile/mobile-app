@@ -134,16 +134,20 @@ function CategoryActionButton({
 function CategoryFormModal({
 	mode,
 	value,
+	type,
 	visible,
 	onCancel,
 	onChange,
+	onTypeChange,
 	onSubmit,
 }: {
 	mode: CategoryModalMode;
 	value: string;
+	type: "income" | "expense";
 	visible: boolean;
 	onCancel: () => void;
 	onChange: (value: string) => void;
+	onTypeChange: (type: "income" | "expense") => void;
 	onSubmit: () => void;
 }) {
 	const title = mode === "create" ? "Nueva categoría" : "Editar categoría";
@@ -183,6 +187,40 @@ function CategoryFormModal({
 						autoFocus
 					/>
 
+					{mode === "create" ? (
+						<View className="gap-[5px]">
+							<Text className="font-mono text-base leading-5 text-base-black">
+								Tipo
+							</Text>
+							<View className="flex-row gap-2">
+								<Pressable
+									onPress={() => onTypeChange("expense")}
+									className={`min-h-[42px] flex-1 items-center justify-center border-[4px] border-base-black px-2 py-2 ${
+										type === "expense" ? "bg-primary-v1" : "bg-base-white"
+									}`}>
+									<Text
+										className={`font-mono text-xs leading-[15px] ${
+											type === "expense" ? "text-base-white" : "text-secondary-v3"
+										}`}>
+										Gasto
+									</Text>
+								</Pressable>
+								<Pressable
+									onPress={() => onTypeChange("income")}
+									className={`min-h-[42px] flex-1 items-center justify-center border-[4px] border-base-black px-2 py-2 ${
+										type === "income" ? "bg-primary-v1" : "bg-base-white"
+									}`}>
+									<Text
+										className={`font-mono text-xs leading-[15px] ${
+											type === "income" ? "text-base-white" : "text-secondary-v3"
+										}`}>
+										Ingreso
+									</Text>
+								</Pressable>
+							</View>
+						</View>
+					) : null}
+
 					<View className="flex-row gap-3">
 						<View className="min-w-0 flex-1">
 							<CategoryActionButton
@@ -214,6 +252,7 @@ export default function CategoriasConfigScreen() {
 		useState<ProductCategory>(DEFAULT_PRODUCT_CATEGORY);
 	const [modalMode, setModalMode] = useState<CategoryModalMode>("create");
 	const [modalValue, setModalValue] = useState("");
+	const [modalType, setModalType] = useState<"income" | "expense">("expense");
 	const [isModalVisible, setIsModalVisible] = useState(false);
 
 	const selectedCategory = useMemo(
@@ -245,6 +284,7 @@ export default function CategoriasConfigScreen() {
 	function openCreateModal() {
 		setModalMode("create");
 		setModalValue("");
+		setModalType("expense");
 		setIsModalVisible(true);
 	}
 
@@ -263,7 +303,7 @@ export default function CategoriasConfigScreen() {
 
 	async function handleSubmitCategory() {
 		if (modalMode === "create") {
-			const category = await crearCategoria({ label: modalValue });
+			const category = await crearCategoria({ label: modalValue, type: modalType });
 			if (category) setSelectedCategoryId(category.id);
 		} else if (selectedCategory) {
 			const category = await editarCategoria(selectedCategory.id, {
@@ -347,9 +387,11 @@ export default function CategoriasConfigScreen() {
 			<CategoryFormModal
 				mode={modalMode}
 				value={modalValue}
+				type={modalType}
 				visible={isModalVisible}
 				onCancel={closeModal}
 				onChange={setModalValue}
+				onTypeChange={setModalType}
 				onSubmit={handleSubmitCategory}
 			/>
 		</SafeAreaView>
