@@ -53,50 +53,6 @@ function IconButton({
 	);
 }
 
-function PreferenceToggle({
-	label,
-	enabled,
-	onPress,
-}: {
-	label: string;
-	enabled: boolean;
-	onPress: () => void;
-}) {
-	return (
-		<Pressable
-			accessibilityRole="switch"
-			accessibilityState={{ checked: enabled }}
-			accessibilityLabel={label}
-			onPress={onPress}
-			className="w-[259px] flex-row items-center justify-between">
-			<Text
-				numberOfLines={1}
-				className="shrink font-mono text-xs leading-[15px] text-base-black">
-				{label}
-			</Text>
-			<View
-				style={{
-					backgroundColor: enabled ? colors.primary.v1 : colors.secondary.v1,
-					borderRadius: 999,
-					height: 37,
-					justifyContent: "center",
-					paddingHorizontal: 6,
-					width: 76,
-				}}>
-				<View
-					style={{
-						alignSelf: enabled ? "flex-end" : "flex-start",
-						backgroundColor: colors.base.white,
-						borderRadius: 999,
-						height: 26,
-						width: 26,
-					}}
-				/>
-			</View>
-		</Pressable>
-	);
-}
-
 function PreferenceDropdown({
 	label,
 	options,
@@ -171,15 +127,12 @@ function PreferenceDropdown({
 
 export default function PreferenciasConfigScreen() {
 	const { language, setLanguage, t } = useI18n();
-	const [isDarkTheme, setIsDarkTheme] = useState(false);
 	const [currency, setCurrency] = useState(CURRENCY_OPTIONS[0]);
 	const [openDropdown, setOpenDropdown] = useState<OpenDropdown>(null);
 
 	const selectedLanguage =
 		LANGUAGE_OPTIONS.find((option) => option.value === language) ??
 		LANGUAGE_OPTIONS[0];
-
-	function handleNotificationsPress() {}
 
 	function toggleDropdown(dropdown: Exclude<OpenDropdown, null>) {
 		setOpenDropdown((currentDropdown) =>
@@ -200,7 +153,7 @@ export default function PreferenciasConfigScreen() {
 	return (
 		<SafeAreaView className="flex-1 bg-base-white">
 			<Stack.Screen options={{ headerShown: false }} />
-			<Header onNotificationsPress={handleNotificationsPress} />
+			<Header />
 
 			<ScrollView
 				className="flex-1"
@@ -222,11 +175,6 @@ export default function PreferenciasConfigScreen() {
 					</View>
 
 					<View className="w-full gap-[18px] px-4">
-						<PreferenceToggle
-							label={t("preferences.darkTheme")}
-							enabled={isDarkTheme}
-							onPress={() => setIsDarkTheme((currentValue) => !currentValue)}
-						/>
 						<PreferenceDropdown
 							label={selectedLanguage.label}
 							options={LANGUAGE_OPTIONS}

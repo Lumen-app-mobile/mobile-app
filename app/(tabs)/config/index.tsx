@@ -16,11 +16,6 @@ type ConfigItem = {
 	href: Href;
 };
 
-type PermissionItem = {
-	key: "camera" | "storage" | "location";
-	labelKey: TranslationKey;
-};
-
 const SYSTEM_ITEMS: ConfigItem[] = [
 	{
 		labelKey: "config.profile",
@@ -31,11 +26,6 @@ const SYSTEM_ITEMS: ConfigItem[] = [
 		labelKey: "config.preferences",
 		icon: "tune",
 		href: "/config/preferencias",
-	},
-	{
-		labelKey: "config.notifications",
-		icon: "notifications-none",
-		href: "/config/notificaciones",
 	},
 	{
 		labelKey: "config.categories",
@@ -62,12 +52,6 @@ const SYSTEM_ITEMS: ConfigItem[] = [
 		icon: "info-outline",
 		href: "/config/informacion",
 	},
-];
-
-const PERMISSION_ITEMS: PermissionItem[] = [
-	{ key: "camera", labelKey: "permissions.camera" },
-	{ key: "storage", labelKey: "permissions.storage" },
-	{ key: "location", labelKey: "permissions.location" },
 ];
 
 const LIST_ITEM_SHADOW_STYLE = {
@@ -126,69 +110,11 @@ function ConfigListItem({
 	);
 }
 
-function PermissionToggle({
-	label,
-	enabled,
-	onPress,
-}: {
-	label: string;
-	enabled: boolean;
-	onPress: () => void;
-}) {
-	return (
-		<Pressable
-			accessibilityRole="switch"
-			accessibilityState={{ checked: enabled }}
-			accessibilityLabel={label}
-			onPress={onPress}
-			className="w-full flex-row items-center justify-between">
-			<Text className="font-mono text-xs leading-[15px] text-base-black">
-				{label}
-			</Text>
-			<View
-				style={{
-					backgroundColor: enabled ? colors.primary.v1 : colors.secondary.v1,
-					borderRadius: 999,
-					height: 37,
-					justifyContent: "center",
-					paddingHorizontal: 6,
-					width: 76,
-				}}>
-				<View
-					style={{
-						alignSelf: enabled ? "flex-end" : "flex-start",
-						backgroundColor: colors.base.white,
-						borderRadius: 999,
-						height: 26,
-						width: 26,
-					}}
-				/>
-			</View>
-		</Pressable>
-	);
-}
-
 export default function ConfigScreen() {
 	const { logout } = useAuth();
 	const { t } = useI18n();
-	const [permissions, setPermissions] = useState<
-		Record<PermissionItem["key"], boolean>
-	>({
-		camera: false,
-		location: false,
-		storage: false,
-	});
 	const [isLoggingOut, setIsLoggingOut] = useState(false);
 	const [logoutError, setLogoutError] = useState("");
-
-	function handleNotificationsPress() {}
-
-	function togglePermission(key: PermissionItem["key"]) {
-		setPermissions((currentPermissions) => ({
-			...currentPermissions,
-			[key]: !currentPermissions[key],
-		}));
-	}
 
 	async function handleLogout() {
 		setLogoutError("");
@@ -205,7 +131,7 @@ export default function ConfigScreen() {
 
 	return (
 		<SafeAreaView className="flex-1 bg-base-white">
-			<Header onNotificationsPress={handleNotificationsPress} />
+			<Header />
 
 			<ScrollView
 				className="flex-1"
@@ -227,20 +153,6 @@ export default function ConfigScreen() {
 									key={item.labelKey}
 									{...item}
 									label={t(item.labelKey)}
-								/>
-							))}
-						</View>
-					</View>
-
-					<View className="gap-4 px-4">
-						<SectionHeading title={t("config.appPermissions")} />
-						<View className="w-[264px] gap-[18px] px-4">
-							{PERMISSION_ITEMS.map((permission) => (
-								<PermissionToggle
-									key={permission.key}
-									label={t(permission.labelKey)}
-									enabled={permissions[permission.key]}
-									onPress={() => togglePermission(permission.key)}
 								/>
 							))}
 						</View>

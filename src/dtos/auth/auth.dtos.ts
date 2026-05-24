@@ -8,3 +8,7 @@ export interface RegisterResponseDto {
 	email: string;
 	username: string;
 }
+
+export interface UpdateProfileRequestDto {
+	name: string;
+}
