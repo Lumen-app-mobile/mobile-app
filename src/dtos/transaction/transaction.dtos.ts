@@ -26,8 +26,9 @@ export interface TransactionDto {
 	user_id: number;
 	tags: TagDto[];
 	invoices: InvoiceDto[];
-	products: TransactionProductDto[];
+	products?: TransactionProductDto[];
 	is_ocr_processed: boolean;
+	review_status: string;
 	created_at: string;
 	updated_at: string;
 }
@@ -54,4 +55,5 @@ export interface UpdateTransactionRequestDto {
 	move_date?: string;
 	category_id?: number;
 	code?: string | null;
+	tag_ids?: number[];
 }

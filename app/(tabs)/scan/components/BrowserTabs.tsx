@@ -2,7 +2,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { Pressable, Text, View } from "react-native";
 import colors from "@/constants/colors";
 
-type ScanTab = "photo" | "manual";
+export type ScanTab = "photo" | "file" | "manual";
 
 interface BrowserTabsProps {
   activeTab: ScanTab;
@@ -16,6 +16,7 @@ export default function BrowserTabs({ activeTab, onTabChange }: BrowserTabsProps
     icon: keyof typeof MaterialIcons.glyphMap;
   }[] = [
     { key: "photo", label: "Foto", icon: "photo-camera" },
+    { key: "file", label: "Archivo", icon: "attach-file" },
     { key: "manual", label: "Manual", icon: "edit" },
   ];
 

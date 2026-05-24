@@ -1,4 +1,5 @@
 import { ProductCategory } from "@/domain/product/product.types";
+import type { TagDto } from "@/dtos/tag/tag.dtos";
 
 export type FacturaUploadStatus =
 	| "idle"
@@ -43,6 +44,7 @@ export interface Factura {
 	createdAt: string;
 	fields: FacturaField[];
 	products: FacturaProduct[];
+	tags: TagDto[];
 	errorCode?: string;
 	errorMessage?: string;
 }

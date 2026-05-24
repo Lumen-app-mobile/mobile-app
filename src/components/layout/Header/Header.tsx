@@ -3,10 +3,10 @@ import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { SvgXml } from "react-native-svg";
 
-import { demoFacturaNotifications } from "@/assets/data/facturaData";
 import Logo from "@/assets/images/logo.svg";
 import colors from "@/constants/colors";
 import { FacturaNotification } from "@/domain/factura/factura.types";
+import { useNotification } from "@/lib/notification";
 
 type HeaderProps = {
 	notifications?: FacturaNotification[];
@@ -23,15 +23,20 @@ const LOGO_WIDTH = 173;
 const LOGO_HEIGHT = 50.42;
 const NOTIFICATION_BUTTON_SIZE = 46;
 export default function Header({
-	notifications = demoFacturaNotifications,
+	notifications: propNotifications,
 	onNotificationsPress,
 	onNotificationPress,
 }: HeaderProps) {
+	const { notifications: contextNotifications, markAllAsRead } = useNotification();
+	const notifications = propNotifications ?? contextNotifications;
 	const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
 	function handleNotificationsPress() {
 		onNotificationsPress?.();
-		setIsNotificationsOpen((currentValue) => !currentValue);
+		setIsNotificationsOpen((currentValue) => {
+			if (!currentValue) markAllAsRead();
+			return !currentValue;
+		});
 	}
 
 	function handleNotificationPress(notification: FacturaNotification) {

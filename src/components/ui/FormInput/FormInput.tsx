@@ -69,15 +69,18 @@ const stateStyles = {
 	},
 } as const;
 
-export default function TextField({
-	label,
-	state = "default",
-	size = "sm",
-	icon,
-	style,
-	placeholder = "placeholder",
-	...textInputProps
-}: InputProps) {
+const TextField = React.forwardRef<TextInput, InputProps>(function TextField(
+	{
+		label,
+		state = "default",
+		size = "sm",
+		icon,
+		style,
+		placeholder = "placeholder",
+		...textInputProps
+	}: InputProps,
+	ref,
+) {
 	// La UI final sale de combinar un tamaño y un estado.
 	const currentSize = sizeStyles[size];
 	const currentState = stateStyles[state];
@@ -115,6 +118,7 @@ export default function TextField({
 
 				{/* Se resetea el padding nativo del TextInput para que el espaciado lo controle el contenedor. */}
 				<TextInput
+					ref={ref}
 					{...textInputProps}
 					editable={currentState.editable}
 					placeholder={placeholder}
@@ -134,4 +138,6 @@ export default function TextField({
 			</View>
 		</View>
 	);
-}
+});
+
+export default TextField;

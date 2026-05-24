@@ -289,7 +289,7 @@ export default function ReciboDetailScreen() {
 						</View>
 					</View>
 
-					{transaction.products.length > 0 ? (
+					{transaction.products && transaction.products.length > 0 ? (
 						<View className="gap-4 border-[3px] border-base-black bg-base-white p-5 shadow-[4px_4px_1px_black]">
 							<Text className="font-mono-bold text-2xl leading-[32px] text-base-black">
 								Productos

@@ -28,7 +28,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { transactionListToProductoList } from "@/mappers/transaction.mapper";
-import { listarTransacciones } from "@/services/transactions";
+import { listarEmpresas, listarTransacciones } from "@/services/transactions";
 import AhorroIndicator from "@/assets/images/Property 1=ahorro.svg";
 import ObligacionIndicator from "@/assets/images/Property 1=obligacion.svg";
 import OcioIndicator from "@/assets/images/Property 1=ocio.svg";
@@ -811,6 +811,7 @@ export default function ProductosScreen() {
 	const [maxPrice, setMaxPrice] = useState("");
 	const [isEasterEggVisible, setIsEasterEggVisible] = useState(false);
 	const [products, setProducts] = useState<Producto[]>([]);
+	const [brands, setBrands] = useState<string[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const extraFiltersSheetRef = useRef<BottomSheetModal>(null);
 	const filterTapStreakRef = useRef(0);
@@ -823,9 +824,14 @@ export default function ProductosScreen() {
 			return;
 		}
 
-		listarTransacciones()
-			.then(transactionListToProductoList)
-			.then(setProducts)
+		Promise.all([
+			listarTransacciones().then(transactionListToProductoList),
+			listarEmpresas(),
+		])
+			.then(([productsData, brandsData]) => {
+				setProducts(productsData);
+				setBrands(brandsData);
+			})
 			.catch((err) => {
 				console.warn("[Productos] Failed to fetch products:", err);
 			})
@@ -858,7 +864,7 @@ export default function ProductosScreen() {
 	);
 
 	const mostExpensiveProducts = useMemo(
-		() => sortProductsByPrice(searchedProducts),
+		() => sortProductsByPrice(searchedProducts).slice(0, 5),
 		[searchedProducts],
 	);
 
@@ -867,7 +873,8 @@ export default function ProductosScreen() {
 		[searchedProducts],
 	);
 
-	const brands = useMemo(() => getUniqueBrands(products), [products]);
+	const brandsFallback = useMemo(() => getUniqueBrands(products), [products]);
+	const resolvedBrands = brands.length > 0 ? brands : brandsFallback;
 	const extraFiltersActive = hasExtraFilters(extraFilters);
 
 	function handleNotificationsPress() {}
@@ -991,7 +998,7 @@ export default function ProductosScreen() {
 			</ScrollView>
 
 			<ExtraFiltersSheet
-				brands={brands}
+				brands={resolvedBrands}
 				bottomSheetModalRef={extraFiltersSheetRef}
 				filters={extraFilters}
 				onApply={handleCloseExtraFilters}

@@ -43,6 +43,11 @@ const SYSTEM_ITEMS: ConfigItem[] = [
 		href: "/config/categorias",
 	},
 	{
+		labelKey: "config.facturas",
+		icon: "receipt-long",
+		href: "/config/facturas" as Href,
+	},
+	{
 		labelKey: "config.data",
 		icon: "dataset",
 		href: "/config/datos",

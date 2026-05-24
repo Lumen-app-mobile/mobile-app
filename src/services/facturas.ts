@@ -89,6 +89,7 @@ export async function subirFacturaMock(): Promise<{
 						},
 					]
 				: [],
+		tags: [],
 		errorCode: status === "not_complete" ? "OCR_INCOMPLETE" : undefined,
 		errorMessage:
 			status === "not_complete"

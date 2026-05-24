@@ -13,6 +13,8 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { AuthProvider } from "@/lib/auth";
 import { I18nProvider } from "@/lib/i18n";
+import { NotificationProvider } from "@/lib/notification";
+import Toast from "@/components/ui/Toast/Toast";
 
 import "../global.css";
 
@@ -36,19 +38,22 @@ export default function RootLayout() {
 			<BottomSheetModalProvider>
 				<I18nProvider>
 					<AuthProvider>
-						<Stack screenOptions={{ headerShown: false }}>
-							<Stack.Screen name="index" />
-							<Stack.Screen name="login" />
-							<Stack.Screen name="(tabs)" />
-							<Stack.Screen
-								name="recibo/[id]"
-								options={{ presentation: "modal" }}
-							/>
-							<Stack.Screen
-								name="stats"
-								options={{ presentation: "modal" }}
-							/>
-						</Stack>
+						<NotificationProvider>
+							<Stack screenOptions={{ headerShown: false }}>
+								<Stack.Screen name="index" />
+								<Stack.Screen name="login" />
+								<Stack.Screen name="(tabs)" />
+								<Stack.Screen
+									name="recibo/[id]"
+									options={{ presentation: "modal" }}
+								/>
+								<Stack.Screen
+									name="stats"
+									options={{ presentation: "modal" }}
+								/>
+							</Stack>
+							<Toast />
+						</NotificationProvider>
 					</AuthProvider>
 				</I18nProvider>
 			</BottomSheetModalProvider>

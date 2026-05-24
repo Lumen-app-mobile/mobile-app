@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { Factura, FacturaNotification, FacturaUploadStatus } from "@/domain/factura/factura.types";
+import type { Factura, FacturaUploadStatus } from "@/domain/factura/factura.types";
 import type { CreateTransactionRequestDto } from "@/dtos/transaction/transaction.dtos";
 import {
 	listarTransacciones,
@@ -12,6 +12,7 @@ import {
 } from "@/services/facturas";
 import type { ProductCategory } from "@/components/ui/CategorySelect/CategorySelect";
 import { transactionDtoToFactura, transactionDtoListToFacturaList } from "@/mappers/transaction.mapper";
+import { useNotification } from "@/lib/notification";
 
 function useRealApi(): boolean {
 	const url = process.env.EXPO_PUBLIC_API_BASE_URL;
@@ -37,7 +38,7 @@ export function useFacturaManagement() {
 	const [ultimaFacturaId, setLastFacturaId] = useState<string | null>(null);
 	const [statusError, setStatusError] = useState<string | undefined>();
 	const [isPreviewVisible, setIsPreviewVisible] = useState(false);
-	const [notifications, setNotifications] = useState<FacturaNotification[]>([]);
+	const { showToast } = useNotification();
 	const realApi = useRealApi();
 
 	async function refreshFacturas(): Promise<Factura[]> {
@@ -84,15 +85,13 @@ export function useFacturaManagement() {
 				setLastFacturaId(String(transaction.id));
 				setIsPreviewVisible(false);
 
-				const notification: FacturaNotification = {
-					id: `notification-${transaction.id}`,
+				showToast({
 					facturaId: String(transaction.id),
-					title: "Factura lista para revisar",
-					detail: transaction.company || `#${transaction.id}`,
-					createdAt: new Date().toISOString(),
-					read: false,
-				};
-				setNotifications((prev) => [notification, ...prev]);
+					title: "pending_review",
+					detail: transaction.company
+						? `Escaneo completado — ${transaction.company}`
+						: `Factura #${transaction.id} lista para revisar`,
+				});
 
 				const mappedFactura = transactionDtoToFactura(transaction);
 				setSelectedFactura(mappedFactura);
@@ -205,7 +204,6 @@ export function useFacturaManagement() {
 		isPreviewVisible,
 		setIsPreviewVisible,
 		completedUploadStatus,
-		notifications,
 		realApi,
 		handleUploadFactura,
 		handleManualSubmit,

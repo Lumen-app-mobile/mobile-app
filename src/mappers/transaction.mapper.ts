@@ -15,6 +15,12 @@ export function amountToCents(amount: number): number {
 }
 
 function mapProcessStatus(dto: TransactionDto): FacturaProcessStatus {
+	const validStatuses: FacturaProcessStatus[] = [
+		"pending_review", "validated", "denied", "not_complete", "error",
+	];
+	if (validStatuses.includes(dto.review_status as FacturaProcessStatus)) {
+		return dto.review_status as FacturaProcessStatus;
+	}
 	if (dto.is_ocr_processed) return "pending_review";
 	return "not_complete";
 }
@@ -51,7 +57,7 @@ function mapFields(dto: TransactionDto): FacturaField[] {
 }
 
 function mapProducts(dto: TransactionDto): Factura["products"] {
-	return dto.products.map((p) => {
+	return (dto.products ?? []).map((p) => {
 		const name = p.name || "Producto sin nombre";
 		if (!p.name) {
 			console.warn(`[Mapper] Product #${p.id}: name is null/empty`);
@@ -86,6 +92,7 @@ export function transactionDtoToFactura(dto: TransactionDto): Factura {
 		createdAt: dto.created_at,
 		fields: mapFields(dto),
 		products: mapProducts(dto),
+		tags: dto.tags ?? [],
 		imageUrl: dto.invoices?.[0]?.file_url,
 		errorCode: undefined,
 		errorMessage: undefined,
@@ -99,7 +106,7 @@ export function transactionDtoListToFacturaList(
 }
 
 export function transactionToProductos(dto: TransactionDto): Producto[] {
-	return dto.products.map((p) => ({
+	return (dto.products ?? []).map((p) => ({
 		id: String(p.id),
 		brand: p.shop_name || "",
 		name: p.name,

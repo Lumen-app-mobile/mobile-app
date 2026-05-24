@@ -10,6 +10,7 @@ export type TranslationKey =
 	| "common.accept"
 	| "common.backToConfig"
 	| "config.title"
+	| "config.facturas"
 	| "config.system"
 	| "config.appPermissions"
 	| "config.profile"
@@ -72,6 +73,7 @@ const translations: Record<AppLanguage, Record<TranslationKey, string>> = {
 		"config.preferences": "Preferencias",
 		"config.notifications": "Notificaciones",
 		"config.categories": "Categorías",
+		"config.facturas": "Facturas",
 		"config.data": "Datos",
 		"config.salary": "Sueldo",
 		"config.information": "Información",
@@ -115,6 +117,7 @@ const translations: Record<AppLanguage, Record<TranslationKey, string>> = {
 		"config.preferences": "Preferences",
 		"config.notifications": "Notifications",
 		"config.categories": "Categories",
+		"config.facturas": "Invoices",
 		"config.data": "Data",
 		"config.salary": "Salary",
 		"config.information": "Information",
@@ -158,6 +161,7 @@ const translations: Record<AppLanguage, Record<TranslationKey, string>> = {
 		"config.preferences": "Preferències",
 		"config.notifications": "Notificacions",
 		"config.categories": "Categories",
+		"config.facturas": "Factures",
 		"config.data": "Dades",
 		"config.salary": "Sou",
 		"config.information": "Informació",
@@ -201,6 +205,7 @@ const translations: Record<AppLanguage, Record<TranslationKey, string>> = {
 		"config.preferences": "Préférences",
 		"config.notifications": "Notifications",
 		"config.categories": "Catégories",
+		"config.facturas": "Factures",
 		"config.data": "Données",
 		"config.salary": "Salaire",
 		"config.information": "Information",
@@ -244,6 +249,7 @@ const translations: Record<AppLanguage, Record<TranslationKey, string>> = {
 		"config.preferences": "Einstellungen",
 		"config.notifications": "Benachrichtigungen",
 		"config.categories": "Kategorien",
+		"config.facturas": "Rechnungen",
 		"config.data": "Daten",
 		"config.salary": "Gehalt",
 		"config.information": "Informationen",
@@ -287,6 +293,7 @@ const translations: Record<AppLanguage, Record<TranslationKey, string>> = {
 		"config.preferences": "Preferenze",
 		"config.notifications": "Notifiche",
 		"config.categories": "Categorie",
+		"config.facturas": "Fatture",
 		"config.data": "Dati",
 		"config.salary": "Stipendio",
 		"config.information": "Informazioni",
@@ -330,6 +337,7 @@ const translations: Record<AppLanguage, Record<TranslationKey, string>> = {
 		"config.preferences": "Preferências",
 		"config.notifications": "Notificações",
 		"config.categories": "Categorias",
+		"config.facturas": "Faturas",
 		"config.data": "Dados",
 		"config.salary": "Salário",
 		"config.information": "Informação",

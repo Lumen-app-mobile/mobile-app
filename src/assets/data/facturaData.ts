@@ -46,6 +46,7 @@ export const demoFacturas: Factura[] = [
 				source: "ocr",
 			},
 		],
+		tags: [],
 	},
 	{
 		id: "factura-logitech-2026-04-24",
@@ -81,6 +82,7 @@ export const demoFacturas: Factura[] = [
 				source: "ocr",
 			},
 		],
+		tags: [],
 	},
 	{
 		id: "factura-apple-2026-04-19",
@@ -116,6 +118,7 @@ export const demoFacturas: Factura[] = [
 				source: "ocr",
 			},
 		],
+		tags: [],
 	},
 	{
 		id: "factura-my-investor-2026-04-09",
@@ -141,6 +144,7 @@ export const demoFacturas: Factura[] = [
 			},
 		],
 		products: [],
+		tags: [],
 		errorCode: "OCR_PRODUCT_MISSING",
 		errorMessage: "No se pudo leer el producto principal.",
 	},
@@ -178,6 +182,7 @@ export const demoFacturas: Factura[] = [
 				source: "ocr",
 			},
 		],
+		tags: [],
 	},
 ];
 

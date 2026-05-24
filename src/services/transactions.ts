@@ -67,6 +67,25 @@ export async function actualizarTransaccion(
 	return handleApiResponse<TransactionDto>(response);
 }
 
+export async function actualizarEstadoRevision(
+	id: number,
+	status: string,
+): Promise<TransactionDto> {
+	const response = await authenticatedFetch(`api/transactions/${id}/review`, {
+		method: "PUT",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ status }),
+	});
+
+	return handleApiResponse<TransactionDto>(response);
+}
+
+export async function listarEmpresas(): Promise<string[]> {
+	const response = await authenticatedFetch("api/transactions/brands");
+
+	return handleApiResponse<string[]>(response);
+}
+
 export async function eliminarTransaccion(id: number): Promise<void> {
 	const response = await authenticatedFetch(`api/transactions/${id}`, {
 		method: "DELETE",

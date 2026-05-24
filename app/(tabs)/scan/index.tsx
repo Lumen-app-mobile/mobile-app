@@ -1,4 +1,5 @@
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
+import * as DocumentPicker from "expo-document-picker";
 import { useEffect, useRef, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -12,12 +13,12 @@ import colors from "@/constants/colors";
 import { ProductCategory } from "@/components/ui/CategorySelect/CategorySelect";
 
 import BrowserTabs from "./components/BrowserTabs";
+import type { ScanTab } from "./components/BrowserTabs";
 import ScanCaptureButton from "./components/ScanCaptureButton";
+import FileUploadPanel from "./components/FileUploadPanel";
 import ManualEntryPanel from "./components/ManualEntryPanel";
 import { useFacturaManagement } from "@/hooks/useFacturaManagement";
 import { useScanCamera } from "@/hooks/useScanCamera";
-
-type ScanTab = "photo" | "manual";
 
 export default function ScanScreen() {
   const [activeTab, setActiveTab] = useState<ScanTab>("photo");
@@ -37,7 +38,6 @@ export default function ScanScreen() {
     isPreviewVisible,
     setIsPreviewVisible,
     completedUploadStatus,
-    notifications,
     realApi,
     handleUploadFactura,
     handleManualSubmit,
@@ -89,11 +89,33 @@ export default function ScanScreen() {
     setShowCamera(true);
   }
 
+  async function handlePickFile() {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ["image/*", "application/pdf"],
+        copyToCacheDirectory: true,
+      });
+
+      if (!result.canceled && result.assets?.[0]) {
+        const asset = result.assets[0];
+        if (asset.mimeType?.startsWith("image/")) {
+          setUri(asset.uri);
+          setIsPreviewVisible(true);
+        } else {
+          await handleUploadFactura(asset.uri);
+        }
+      }
+    } catch (err) {
+      console.warn("[Scan] File picker error:", err);
+    }
+  }
+
   function handleRetakeFactura() {
     if (uploadStatus !== "uploading") setIsPreviewVisible(false);
   }
 
   const handleSendInvoice = async () => {
+    setIsPreviewVisible(false);
     if (uri) {
       await handleUploadFactura(uri);
     } else {
@@ -101,7 +123,6 @@ export default function ScanScreen() {
         handleUploadFactura();
       });
     }
-    setIsPreviewVisible(false);
   };
 
   const handleManualSubmitForm = () => {
@@ -133,7 +154,7 @@ export default function ScanScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-base-white">
-      <Header notifications={notifications} />
+      <Header />
 
       <ScrollView
         className="flex-1"
@@ -175,6 +196,8 @@ export default function ScanScreen() {
                   />
                 ) : null}
               </View>
+            ) : activeTab === "file" ? (
+              <FileUploadPanel onPickFile={handlePickFile} />
             ) : (
               <ManualEntryPanel
                 selectedFactura={selectedFactura}
