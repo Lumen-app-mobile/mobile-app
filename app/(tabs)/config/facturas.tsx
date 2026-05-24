@@ -1,7 +1,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useRef, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import Header from "@/components/layout/Header/Header";
@@ -213,6 +213,13 @@ export default function FacturasScreen() {
                       bottom: 0,
                     }}
                   />
+                  {factura.imageUrl && (
+                    <Image
+                      source={{ uri: factura.imageUrl }}
+                      className="h-16 w-16 border-[2px] border-base-black"
+                      resizeMode="cover"
+                    />
+                  )}
                   <View className="ml-4 min-w-0 flex-1 gap-1">
                     <Text
                       numberOfLines={1}

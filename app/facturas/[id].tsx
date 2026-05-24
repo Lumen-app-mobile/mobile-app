@@ -1,7 +1,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import Header from "@/components/layout/Header/Header";
@@ -113,7 +113,19 @@ function ActionButton({
   );
 }
 
-function FacturaImagePreview() {
+function FacturaImagePreview({ imageUrl }: { imageUrl?: string }) {
+  if (imageUrl) {
+    return (
+      <View className="h-[300px] w-full overflow-hidden border-[3px] border-base-black shadow-[4px_4px_1px_black]">
+        <Image
+          source={{ uri: imageUrl }}
+          className="h-full w-full"
+          resizeMode="contain"
+        />
+      </View>
+    );
+  }
+
   return (
     <View className="h-[300px] w-full items-center justify-center border-[3px] border-base-black bg-base-white shadow-[4px_4px_1px_black]">
       <MaterialIcons
@@ -376,7 +388,7 @@ export default function FacturaDetailScreen() {
             </View>
           </View>
 
-          <FacturaImagePreview />
+          <FacturaImagePreview imageUrl={factura.imageUrl} />
 
           <View className="gap-3 border-[3px] border-base-black bg-base-white p-4 shadow-[4px_4px_1px_black]">
             <Text className="font-mono-bold text-2xl leading-[32px] text-base-black">

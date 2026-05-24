@@ -80,6 +80,14 @@ function mapProducts(dto: TransactionDto): Factura["products"] {
 	});
 }
 
+function buildImageUrl(fileUrl: string | undefined): string | undefined {
+	if (!fileUrl) return undefined;
+	const baseUrl = process.env.EXPO_PUBLIC_API_BASE_URL;
+	if (!baseUrl) return fileUrl;
+	const cleanBase = baseUrl.replace(/\/$/, "");
+	return `${cleanBase}/uploads/${fileUrl.replace(/^\//, "")}`;
+}
+
 export function transactionDtoToFactura(dto: TransactionDto): Factura {
 	if (!dto.company && !dto.description) {
 		console.warn(`[Mapper] Transaction #${dto.id}: both company and description are empty`);
@@ -93,7 +101,7 @@ export function transactionDtoToFactura(dto: TransactionDto): Factura {
 		fields: mapFields(dto),
 		products: mapProducts(dto),
 		tags: dto.tags ?? [],
-		imageUrl: dto.invoices?.[0]?.file_url,
+		imageUrl: buildImageUrl(dto.invoices?.[0]?.file_url),
 		errorCode: undefined,
 		errorMessage: undefined,
 	};
