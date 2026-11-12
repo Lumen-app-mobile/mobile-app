@@ -1,50 +1,90 @@
-# Welcome to your Expo app 👋
+# Lumen · App móvil
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+App móvil del proyecto **Lumen** para controlar tus gastos a partir de los tickets de compra. Le haces una foto al ticket, la [API](https://github.com/Lumen-app-mobile/api-main) lo procesa con OCR + IA, y la app te muestra la tienda, la fecha, los productos y en qué categorías gastas.
 
-## Get started
+## Funcionalidades
 
-1. Install dependencies
+- **Login** con Firebase Authentication
+- **Escaneo de tickets** con la cámara, subida de imagen o archivo, o entrada manual
+- **Revisión** de los datos extraídos por OCR antes de guardarlos
+- **Inicio** con balance y últimos movimientos
+- **Facturas / recibos**: listado y detalle con la imagen del ticket
+- **Productos**: histórico de productos comprados y precios
+- **Estadísticas** de gasto
+- **Configuración**: perfil, categorías, etiquetas, sueldo, preferencias y datos
+- Notificaciones e internacionalización (i18n)
 
-   ```bash
-   npm install
-   ```
+## Stack
 
-2. Start the app
+- [Expo SDK 55](https://expo.dev) + React Native 0.83
+- [Expo Router](https://docs.expo.dev/router/introduction/) (rutas basadas en archivos)
+- [NativeWind](https://www.nativewind.dev/) (Tailwind CSS para React Native)
+- Firebase Auth
+- `expo-camera`, `expo-document-picker`, `expo-secure-store`
+- TypeScript
 
-   ```bash
-   npx expo start
-   ```
+## Estructura
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+mobile-app/
+├── app/                    # Pantallas (Expo Router)
+│   ├── login.tsx
+│   ├── stats.tsx
+│   ├── facturas/[id].tsx
+│   └── (tabs)/
+│       ├── index/          # Inicio y detalle de recibos
+│       ├── scan/           # Escaneo de tickets
+│       ├── productos/      # Productos
+│       └── config/         # Perfil, categorías, sueldo, preferencias…
+├── src/
+│   ├── services/           # Cliente de la API (transactions, tags, balance, categories…)
+│   ├── lib/                # Auth, i18n, notificaciones
+│   ├── hooks/              # useScanCamera, useFacturaManagement
+│   ├── mappers/
+│   ├── constants/
+│   └── assets/
+├── docs/                   # Notas técnicas
+├── app.json
+└── eas.json                # Configuración de builds con EAS
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Puesta en marcha
 
-## Learn more
+Requisitos: Node.js LTS y la [API](https://github.com/Lumen-app-mobile/api-main) en marcha.
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+npm install
+cp .env.sample .env
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+En `.env`, apunta la app a tu API:
 
-## Join the community
+```env
+EXPO_PUBLIC_API_BASE_URL=http://<tu-ip-local>:8080/
+```
 
-Join our community of developers creating universal apps.
+> Si pruebas en un móvil físico, usa la IP local de tu ordenador (no `localhost`) o un túnel como ngrok.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+npx expo start      # servidor de desarrollo (Expo Go / emulador)
+npm run android     # build nativa Android
+npm run ios         # build nativa iOS
+npm run web         # versión web
+npm run lint
+```
+
+### Builds con EAS
+
+```bash
+npx eas build -p android --profile preview
+```
+
+## Proyecto Lumen
+
+| Repo | Descripción |
+|---|---|
+| [api-main](https://github.com/Lumen-app-mobile/api-main) | API principal (Go) |
+| [ocr-processor](https://github.com/Lumen-app-mobile/ocr-processor) | Extracción de datos de tickets con OCR + LLM |
+| **mobile-app** | App móvil (este repo) |
+| [landing-page](https://github.com/Lumen-app-mobile/landing-page) | Web del proyecto (Astro) |
+| [docs](https://github.com/Lumen-app-mobile/docs) | Memoria y documentación |
